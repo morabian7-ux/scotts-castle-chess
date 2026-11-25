@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>마법 체스 성</title>
+<title>흑기사 스캇의 캐슬</title>
 <style>
   :root {
     --board: min(70vh, 72vw, 600px);
@@ -133,23 +133,23 @@
     --parch-bot: #e2c98f;
     --edge: #8a6330;
   }
-  html, body { background: #120d0a; }
+  html, body { background: #160a24; }
   body {
     font-family: "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
     color: #f5e6c0;
-    background-color: #120d0a;
+    background-color: #160a24;
     background-image:
-      radial-gradient(ellipse at 50% -10%, rgba(255, 170, 70, .22), transparent 55%),
-      radial-gradient(ellipse at 50% 120%, rgba(90, 60, 140, .25), transparent 60%),
-      repeating-linear-gradient(90deg, rgba(255, 255, 255, .015) 0 2px, transparent 2px 64px),
-      linear-gradient(180deg, #1c1510 0%, #0d0907 100%);
+      radial-gradient(ellipse at 50% -10%, rgba(190, 120, 255, .30), transparent 55%),
+      radial-gradient(ellipse at 50% 120%, rgba(140, 60, 200, .35), transparent 60%),
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, .018) 0 2px, transparent 2px 64px),
+      linear-gradient(180deg, #2a1340 0%, #12071d 100%);
     background-attachment: fixed;
   }
   /* 벽에 걸린 횃불 느낌의 흔들리는 빛 */
   body::before, body::after {
     content: ""; position: fixed; top: -60px; width: 300px; height: 300px;
     pointer-events: none; z-index: 0;
-    background: radial-gradient(circle, rgba(255, 150, 50, .35), transparent 65%);
+    background: radial-gradient(circle, rgba(200, 120, 255, .38), transparent 65%);
     animation: flicker 2.4s ease-in-out infinite alternate;
   }
   body::before { left: -120px; }
@@ -264,7 +264,7 @@
 
 <!-- 1. 시작 화면 -->
 <section id="home" class="screen active">
-  <h1>🏰 마법 체스 성</h1>
+  <h1>🏰 흑기사 스캇의 캐슬</h1>
   <p class="sub">마법 기사들의 체스를 배우고, 친구와 겨뤄 봐요!</p>
   <div class="menu">
     <button class="big" id="btnLearn">📘 배우기</button>
