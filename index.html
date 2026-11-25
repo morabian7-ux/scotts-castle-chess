@@ -221,6 +221,14 @@
   .captured .pc.white { color: #fbf6e9; }
   #confetti { z-index: 40; }
 
+  /* 첫 화면: 한국어 + 영어 함께 */
+  #home .en { display: block; margin-top: 4px; }
+  #home h1 .en { font-size: .55em; font-style: italic; color: #f0d898; }
+  #home .sub .en { font-size: .85em; }
+  #home button.bi { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
+  #home button.bi .en { font-size: .7em; font-weight: 600; opacity: .9; }
+  .langLabel { margin: 10px 0 0; font-size: 18px; color: #e9d7a8; }
+
   /* 언어 고르기 버튼 */
   .langRow { display: flex; justify-content: center; gap: 8px; margin-top: 8px; }
   button.lang {
@@ -276,15 +284,17 @@
 <!-- 1. 시작 화면 -->
 <!-- 화면 글자는 data-i18n 이름표로 한국어/영어가 바뀌어요 -->
 <section id="home" class="screen active">
+  <!-- 첫 화면은 언제나 한국어와 영어를 함께 보여 줘요. 아래 버튼은 게임 안의 언어를 골라요. -->
+  <p class="langLabel">게임 언어 · Game language</p>
   <div class="langRow">
     <button class="lang" data-lang="en">English</button>
     <button class="lang" data-lang="ko">한국어</button>
   </div>
-  <h1 data-i18n="h1">🏰 흑기사 스캇의 캐슬</h1>
-  <p class="sub" data-i18n="sub">사랑하는 우리 아들들과 친구들이 즐기는 게임</p>
+  <h1>🏰 흑기사 스캇의 캐슬<span class="en">Black Knight Scott's Castle</span></h1>
+  <p class="sub">사랑하는 우리 아들들과 친구들이 즐기는 게임<span class="en">A game for our beloved sons and their friends</span></p>
   <div class="menu">
-    <button class="big" id="btnLearn" data-i18n="learn">📘 배우기</button>
-    <button class="big" id="btnPlay" data-i18n="play">🎮 게임하기</button>
+    <button class="big bi" id="btnLearn">📘 배우기<span class="en">Learn</span></button>
+    <button class="big bi" id="btnPlay">🎮 게임하기<span class="en">Play</span></button>
   </div>
 </section>
 
