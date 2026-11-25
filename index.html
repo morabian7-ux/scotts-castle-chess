@@ -221,6 +221,17 @@
   .captured .pc.white { color: #fbf6e9; }
   #confetti { z-index: 40; }
 
+  /* 언어 고르기 버튼 */
+  .langRow { display: flex; justify-content: center; gap: 8px; margin-top: 8px; }
+  button.lang {
+    min-height: 48px; font-size: 20px; padding: 8px 18px;
+    background: rgba(40, 20, 60, .6); color: #e9d7a8; border: 2px solid #8a6330; box-shadow: 0 3px 0 #1a0f08;
+  }
+  button.lang.on {
+    background: linear-gradient(180deg, #f6e7bd, #e2c98f); color: #3b2415;
+    border-color: var(--gold); box-shadow: 0 3px 0 #2a180a, 0 0 12px rgba(232, 196, 106, .6); text-shadow: none;
+  }
+
   /* ===== 아이폰(터치 화면) 맞춤 ===== */
   html { -webkit-text-size-adjust: 100%; }
   body {
@@ -263,33 +274,38 @@
 <div id="toast"></div>
 
 <!-- 1. 시작 화면 -->
+<!-- 화면 글자는 data-i18n 이름표로 한국어/영어가 바뀌어요 -->
 <section id="home" class="screen active">
-  <h1>🏰 흑기사 스캇의 캐슬</h1>
-  <p class="sub">사랑하는 우리 아들들과 친구들이 즐기는 게임</p>
+  <div class="langRow">
+    <button class="lang" data-lang="en">English</button>
+    <button class="lang" data-lang="ko">한국어</button>
+  </div>
+  <h1 data-i18n="h1">🏰 흑기사 스캇의 캐슬</h1>
+  <p class="sub" data-i18n="sub">사랑하는 우리 아들들과 친구들이 즐기는 게임</p>
   <div class="menu">
-    <button class="big" id="btnLearn">📘 배우기</button>
-    <button class="big" id="btnPlay">🎮 게임하기</button>
+    <button class="big" id="btnLearn" data-i18n="learn">📘 배우기</button>
+    <button class="big" id="btnPlay" data-i18n="play">🎮 게임하기</button>
   </div>
 </section>
 
 <!-- 게임하기: 대결 방식 -->
 <section id="mode" class="screen">
-  <h2>어떻게 할까요?</h2>
+  <h2 data-i18n="modeQ">어떻게 할까요?</h2>
   <div class="menu">
-    <button class="big" id="btnPvp">👫 친구와 하기</button>
-    <button class="big" id="btnAi">🤖 컴퓨터와 하기</button>
-    <button class="ghost" data-go="home">← 처음으로</button>
+    <button class="big" id="btnPvp" data-i18n="pvp">👫 친구와 하기</button>
+    <button class="big" id="btnAi" data-i18n="ai">🤖 컴퓨터와 하기</button>
+    <button class="ghost" data-go="home" data-i18n="backHome">← 처음으로</button>
   </div>
 </section>
 
 <!-- 컴퓨터 난이도 -->
 <section id="level" class="screen">
-  <h2>컴퓨터 난이도를 골라요</h2>
+  <h2 data-i18n="levelQ">컴퓨터 난이도를 골라요</h2>
   <div class="menu">
-    <button class="big" data-level="easy">🐥 초급 (잡을 수 있으면 잡아요)</button>
-    <button class="big" data-level="normal">🦅 중급 (두 수 앞까지 생각해요)</button>
-    <button class="big" data-level="hard">🐉 고급 (세 수 앞까지 생각해요)</button>
-    <button class="ghost" data-go="mode">← 뒤로</button>
+    <button class="big" data-level="easy" data-i18n="easy">🐥 초급 (잡을 수 있으면 잡아요)</button>
+    <button class="big" data-level="normal" data-i18n="normal">🦅 중급 (두 수 앞까지 생각해요)</button>
+    <button class="big" data-level="hard" data-i18n="hard">🐉 고급 (세 수 앞까지 생각해요)</button>
+    <button class="ghost" data-go="mode" data-i18n="back">← 뒤로</button>
   </div>
 </section>
 
@@ -299,28 +315,28 @@
   <div class="gameMain">
     <div id="board" class="board"></div>
     <aside class="side">
-      <div id="panel" class="panel">기물을 눌러서 움직여 보세요.</div>
+      <div id="panel" class="panel" data-i18n="tapPiece">기물을 눌러서 움직여 보세요.</div>
       <div class="captured">
-        <div>흰색이 잡은 기물: <span id="capByWhite"></span></div>
-        <div>검은색이 잡은 기물: <span id="capByBlack"></span></div>
+        <div><span data-i18n="capW">흰색이 잡은 기물:</span> <span id="capByWhite"></span></div>
+        <div><span data-i18n="capB">검은색이 잡은 기물:</span> <span id="capByBlack"></span></div>
       </div>
-      <div id="thinking" class="thinking" hidden>컴퓨터가 생각하고 있어요... 🤔</div>
+      <div id="thinking" class="thinking" hidden data-i18n="thinking">컴퓨터가 생각하고 있어요... 🤔</div>
     </aside>
   </div>
   <div class="btnRow">
-    <button class="ghost" id="btnHome">처음으로</button>
-    <button id="btnUndo">↩ 되돌리기</button>
-    <button id="btnHint">💡 힌트</button>
-    <button class="ghost" id="btnSound">🔊 소리 끄기</button>
+    <button class="ghost" id="btnHome" data-i18n="home">처음으로</button>
+    <button id="btnUndo" data-i18n="undo">↩ 되돌리기</button>
+    <button id="btnHint" data-i18n="hint">💡 힌트</button>
+    <button class="ghost" id="btnSound" data-i18n="soundOff">🔊 소리 끄기</button>
   </div>
 </section>
 
 <!-- 배우기 목록 -->
 <section id="learn" class="screen">
-  <h2>📘 체스 배우기</h2>
-  <p class="sub">레슨을 차례대로 클리어해요.</p>
+  <h2 data-i18n="learnTitle">📘 체스 배우기</h2>
+  <p class="sub" data-i18n="learnSub">레슨을 차례대로 클리어해요.</p>
   <div id="lessonGrid" class="lessonGrid"></div>
-  <button class="ghost" id="btnLearnHome">← 처음으로</button>
+  <button class="ghost" id="btnLearnHome" data-i18n="backHome">← 처음으로</button>
 </section>
 
 <!-- 레슨 화면 -->
@@ -337,14 +353,14 @@
   <div id="lessonDone" class="doneBox" hidden>
     <div id="lessonDoneText"></div>
     <div class="btnRow">
-      <button id="btnNextLesson">다음 레슨 ▶</button>
-      <button class="ghost" id="btnDoneRetry">한 번 더</button>
-      <button class="ghost" id="btnDoneList">목록으로</button>
+      <button id="btnNextLesson" data-i18n="nextLesson">다음 레슨 ▶</button>
+      <button class="ghost" id="btnDoneRetry" data-i18n="onceMore">한 번 더</button>
+      <button class="ghost" id="btnDoneList" data-i18n="toList">목록으로</button>
     </div>
   </div>
   <div class="btnRow">
-    <button class="ghost" id="btnRetry">↻ 다시 하기</button>
-    <button class="ghost" id="btnListBack">← 목록으로</button>
+    <button class="ghost" id="btnRetry" data-i18n="retry">↻ 다시 하기</button>
+    <button class="ghost" id="btnListBack" data-i18n="backList">← 목록으로</button>
   </div>
 </section>
 
@@ -353,15 +369,49 @@
 /* 규칙 코드: 화면(DOM)과 완전히 분리되어 있어요. 테스트(tests/rules.test.js)도 이 부분을 읽어요. */
 const Rules = (() => {
   const FILES = 'abcdefgh';
-  const PIECE_NAMES = { p: '폰', r: '룩', n: '나이트', b: '비숍', q: '퀸', k: '킹', star: '별' };
-  const MOVE_HINT = {
-    p: '폰은 앞으로만 가고, 잡을 때는 비스듬히 앞으로 잡아요.',
-    r: '룩은 앞뒤옆으로만 갈 수 있어요.',
-    n: '나이트는 ㄱ자 모양으로만 뛸 수 있어요.',
-    b: '비숍은 대각선으로만 갈 수 있어요.',
-    q: '퀸은 앞뒤옆과 대각선으로 갈 수 있어요.',
-    k: '킹은 주변 한 칸씩만 갈 수 있어요.'
+  // 규칙이 알려 주는 말 (한국어 / 영어)
+  const TEXT = {
+    ko: {
+      names: { p: '폰', r: '룩', n: '나이트', b: '비숍', q: '퀸', k: '킹', star: '별' },
+      hint: {
+        p: '폰은 앞으로만 가고, 잡을 때는 비스듬히 앞으로 잡아요.',
+        r: '룩은 앞뒤옆으로만 갈 수 있어요.',
+        n: '나이트는 ㄱ자 모양으로만 뛸 수 있어요.',
+        b: '비숍은 대각선으로만 갈 수 있어요.',
+        q: '퀸은 앞뒤옆과 대각선으로 갈 수 있어요.',
+        k: '킹은 주변 한 칸씩만 갈 수 있어요.'
+      },
+      pickFirst: '먼저 내 기물을 눌러 주세요.',
+      notYourTurn: '지금은 상대 차례예요. 내 차례를 기다려요.',
+      ownPiece: '내 기물이 있는 칸에는 갈 수 없어요.',
+      cantGo: '{name}은(는) 그 칸으로 갈 수 없어요. {hint}',
+      inCheck: '왕이 공격받고 있어요! 먼저 왕을 지켜야 해요.',
+      selfCheck: '그 수를 두면 내 왕이 공격받게 돼요. 그래서 둘 수 없어요.'
+    },
+    en: {
+      names: { p: 'pawn', r: 'rook', n: 'knight', b: 'bishop', q: 'queen', k: 'king', star: 'star' },
+      hint: {
+        p: 'Pawns only move forward, and they capture one square diagonally forward.',
+        r: 'Rooks only move straight: forward, backward, or sideways.',
+        n: 'Knights only jump in an L shape.',
+        b: 'Bishops only move diagonally.',
+        q: 'Queens move straight or diagonally.',
+        k: 'Kings move just one square in any direction.'
+      },
+      pickFirst: 'Tap one of your pieces first.',
+      notYourTurn: "It's your opponent's turn. Please wait for your turn.",
+      ownPiece: "You can't move onto your own piece.",
+      cantGo: "The {name} can't go to that square. {hint}",
+      inCheck: 'Your king is under attack! Protect your king first.',
+      selfCheck: "That move would put your king in danger, so you can't play it."
+    }
   };
+  let lang = 'ko';
+  const setLang = (l) => { lang = TEXT[l] ? l : 'ko'; };
+  const getLang = () => lang;
+  const pieceName = (t) => TEXT[lang].names[t];
+  const PIECE_NAMES = TEXT.ko.names;
+  const MOVE_HINT = TEXT.ko.hint;
   const VALUE = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0, star: 0 };
   const KNIGHT = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]];
   const KING = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
@@ -418,18 +468,45 @@ const Rules = (() => {
   }
 
   const LESSONS = [
-    { id: 1, title: '폰', how: '폰은 앞으로 한 칸 가고, 비스듬히 앞에 있는 별을 먹어요.', piece: { t: 'p', at: 'e2' }, stars: ['d3', 'e4', 'f5'] },
-    { id: 2, title: '룩', how: '룩은 앞뒤옆으로 쭉 가요. 가는 길에 막는 것이 없어야 해요.', piece: { t: 'r', at: 'a1' }, stars: ['a5', 'e5', 'e1'] },
-    { id: 3, title: '비숍', how: '비숍은 대각선으로 쭉 가요.', piece: { t: 'b', at: 'c1' }, stars: ['f4', 'd6', 'b4'] },
-    { id: 4, title: '나이트', how: '나이트는 ㄱ자로 뛰어요. 가운데 기물이 있어도 뛰어넘어요.', piece: { t: 'n', at: 'b1' }, stars: ['c3', 'd5', 'e7'] },
-    { id: 5, title: '퀸', how: '퀸은 앞뒤옆과 대각선으로 쭉 가요. 제일 힘이 세요!', piece: { t: 'q', at: 'd1' }, stars: ['d5', 'h5', 'h1'] },
-    { id: 6, title: '킹', how: '킹은 주변 한 칸씩만 갈 수 있어요.', piece: { t: 'k', at: 'e1' }, stars: ['e2', 'f3', 'g4'] },
+    {
+      id: 1, title: '폰', how: '폰은 앞으로 한 칸 가고, 비스듬히 앞에 있는 별을 먹어요.',
+      titleEn: 'Pawn', howEn: 'Pawns move one square forward and eat stars that are diagonally in front of them.',
+      piece: { t: 'p', at: 'e2' }, stars: ['d3', 'e4', 'f5']
+    },
+    {
+      id: 2, title: '룩', how: '룩은 앞뒤옆으로 쭉 가요. 가는 길에 막는 것이 없어야 해요.',
+      titleEn: 'Rook', howEn: 'Rooks slide straight forward, backward, and sideways. Nothing can be in the way.',
+      piece: { t: 'r', at: 'a1' }, stars: ['a5', 'e5', 'e1']
+    },
+    {
+      id: 3, title: '비숍', how: '비숍은 대각선으로 쭉 가요.',
+      titleEn: 'Bishop', howEn: 'Bishops slide diagonally.',
+      piece: { t: 'b', at: 'c1' }, stars: ['f4', 'd6', 'b4']
+    },
+    {
+      id: 4, title: '나이트', how: '나이트는 ㄱ자로 뛰어요. 가운데 기물이 있어도 뛰어넘어요.',
+      titleEn: 'Knight', howEn: 'Knights jump in an L shape. They can jump over other pieces.',
+      piece: { t: 'n', at: 'b1' }, stars: ['c3', 'd5', 'e7']
+    },
+    {
+      id: 5, title: '퀸', how: '퀸은 앞뒤옆과 대각선으로 쭉 가요. 제일 힘이 세요!',
+      titleEn: 'Queen', howEn: 'Queens slide straight and diagonally. The strongest piece!',
+      piece: { t: 'q', at: 'd1' }, stars: ['d5', 'h5', 'h1']
+    },
+    {
+      id: 6, title: '킹', how: '킹은 주변 한 칸씩만 갈 수 있어요.',
+      titleEn: 'King', howEn: 'Kings move just one square in any direction.',
+      piece: { t: 'k', at: 'e1' }, stars: ['e2', 'f3', 'g4']
+    },
     {
       id: 7, title: '체크메이트란?', mate: true,
       how: '체크메이트: 왕이 공격받는데 도망갈 곳도, 막을 방법도 없는 상태예요. 룩으로 한 수에 끝내 보세요!',
+      titleEn: 'What is checkmate?',
+      howEn: 'Checkmate means the king is under attack and has no way to escape or block. Finish it in one move with your rook!',
       setup: [['h1', 'k', 'w'], ['a1', 'r', 'w'], ['g8', 'k', 'b'], ['f7', 'p', 'b'], ['g7', 'p', 'b'], ['h7', 'p', 'b']]
     }
   ];
+  const lessonText = (L) => (lang === 'en' ? { title: L.titleEn, how: L.howEn } : { title: L.title, how: L.how });
 
   // 공격 범위(그 칸을 지키는지 보는 용도). 킹 캐슬링 제외.
   function attacksFrom(s, i) {
@@ -632,15 +709,16 @@ const Rules = (() => {
 
   // 왜 이 수를 둘 수 없는지 짧게 알려 줌
   function explainIllegal(s, from, to) {
+    const T = TEXT[lang];
     const p = s.board[from];
-    if (!p || p.t === 'star') return '먼저 내 기물을 눌러 주세요.';
-    if (p.c !== s.turn) return '지금은 상대 차례예요. 내 차례를 기다려요.';
+    if (!p || p.t === 'star') return T.pickFirst;
+    if (p.c !== s.turn) return T.notYourTurn;
     const q = s.board[to];
-    if (q && q.t !== 'star' && q.c === p.c) return '내 기물이 있는 칸에는 갈 수 없어요.';
+    if (q && q.t !== 'star' && q.c === p.c) return T.ownPiece;
     const reachable = pseudoMoves(s, from).some((m) => m.to === to);
-    if (!reachable) return `${PIECE_NAMES[p.t]}은(는) 그 칸으로 갈 수 없어요. ${MOVE_HINT[p.t]}`;
-    if (inCheck(s, p.c)) return '왕이 공격받고 있어요! 먼저 왕을 지켜야 해요.';
-    return '그 수를 두면 내 왕이 공격받게 돼요. 그래서 둘 수 없어요.';
+    if (!reachable) return T.cantGo.replace('{name}', T.names[p.t]).replace('{hint}', T.hint[p.t]);
+    if (inCheck(s, p.c)) return T.inCheck;
+    return T.selfCheck;
   }
 
   const starsLeft = (s) => s.board.filter((p) => p && p.t === 'star').length;
@@ -698,7 +776,8 @@ const Rules = (() => {
     emptyState, startState, cloneState, lessonState,
     pseudoMoves, legalMoves, allLegalMoves, applyMove,
     attacksFrom, isAttacked, findKing, inCheck, status,
-    explainIllegal, starsLeft, evaluate, bestMove, aiMove
+    explainIllegal, starsLeft, evaluate, bestMove, aiMove,
+    setLang, getLang, pieceName, lessonText
   };
 })();
 /* ===RULES:END=== */
@@ -706,15 +785,148 @@ const Rules = (() => {
 /* ===UI:START=== */
 const $ = (id) => document.getElementById(id);
 const GLYPH = { k: '♚︎', q: '♛︎', r: '♜︎', b: '♝︎', n: '♞︎', p: '♟︎' };
-const DESC = {
-  p: '🐾 폰: 앞으로 한 칸 가요. 처음에는 두 칸도 갈 수 있어요. 잡을 때는 비스듬히 앞으로 잡아요.',
-  r: '🏰 룩: 앞뒤옆으로 쭉 갈 수 있어요.',
-  n: '🐴 나이트: ㄱ자 모양으로 뛰어요. 다른 기물을 뛰어넘을 수 있어요.',
-  b: '⛪ 비숍: 대각선으로 쭉 갈 수 있어요.',
-  q: '👑 퀸: 앞뒤옆과 대각선으로 쭉 갈 수 있어요. 가장 힘이 센 기물이에요.',
-  k: '🤴 킹: 주변 한 칸씩만 갈 수 있어요. 킹이 잡히면 게임이 끝나요.'
+// ---- 화면 글자 (한국어 / 영어) ----
+const I18N = {
+  ko: {
+    title: '흑기사 스캇의 캐슬',
+    h1: '🏰 흑기사 스캇의 캐슬',
+    sub: '사랑하는 우리 아들들과 친구들이 즐기는 게임',
+    learn: '📘 배우기', play: '🎮 게임하기',
+    modeQ: '어떻게 할까요?', pvp: '👫 친구와 하기', ai: '🤖 컴퓨터와 하기',
+    backHome: '← 처음으로', back: '← 뒤로',
+    levelQ: '컴퓨터 난이도를 골라요',
+    easy: '🐥 초급 (잡을 수 있으면 잡아요)',
+    normal: '🦅 중급 (두 수 앞까지 생각해요)',
+    hard: '🐉 고급 (세 수 앞까지 생각해요)',
+    tapPiece: '기물을 눌러서 움직여 보세요.',
+    capW: '흰색이 잡은 기물:', capB: '검은색이 잡은 기물:',
+    thinking: '컴퓨터가 생각하고 있어요... 🤔',
+    home: '처음으로', undo: '↩ 되돌리기', hint: '💡 힌트',
+    soundOn: '🔈 소리 켜기', soundOff: '🔊 소리 끄기',
+    learnTitle: '📘 체스 배우기', learnSub: '레슨을 차례대로 클리어해요.',
+    nextLesson: '다음 레슨 ▶', onceMore: '한 번 더', toList: '목록으로',
+    retry: '↻ 다시 하기', backList: '← 목록으로',
+    white: '흰색', black: '검은색', you: ' (나)', computer: ' (컴퓨터)',
+    turn: '{icon} {color} 차례{who}',
+    turnCheck: '⚠️ {color} 차례{who} · 왕이 공격받고 있어요!',
+    bannerMate: '🏆 체크메이트! {color} 승리',
+    bannerStale: '🤝 스테일메이트! 비겼어요',
+    startAi: '컴퓨터와 대결해요. 나는 흰색이에요. 기물을 눌러서 움직여 보세요.',
+    startPvp: '친구와 대결해요. 흰색부터 시작해요. 기물을 눌러서 움직여 보세요.',
+    enemyPiece: '그 기물은 상대 기물이에요. 내 기물을 먼저 눌러 주세요.',
+    pickOwn: '먼저 내 기물을 눌러 주세요.',
+    cantMove: '지금은 움직일 수 없어요. 다른 기물을 골라 보세요.',
+    canGo: '갈 수 있는 칸: {n}개 (초록 점은 빈 칸, 빨간 테두리는 잡는 칸)',
+    yellow: '⚠️ 노란 칸은 상대가 잡을 수 있는 칸이에요.',
+    mateSay: '🏆 체크메이트! {color}이 이겼어요! 🎉',
+    staleSay: '🤝 스테일메이트! 둘 수 있는 수가 없어서 비겼어요.',
+    moved: '{name} 기물을 옮겼어요.',
+    aiMoved: '컴퓨터가 {name} 기물을 옮겼어요.',
+    checkSay: '왕이 공격받고 있어요! 왕을 지켜요',
+    noUndo: '되돌릴 수 있는 수가 없어요.',
+    undone: '한 수를 되돌렸어요. 다시 두어 봐요.',
+    hintSay: '💡 힌트: 반짝이는 {name} 기물을 옮겨 보세요.',
+    lessonN: '레슨 {id}', cleared: '클리어!', tapStart: '눌러서 시작', locked: '앞 레슨을 먼저 끝내요',
+    lessonTitle: '레슨 {id}: {title}',
+    mateGoal: '한 수로 검은 왕을 체크메이트 하세요!',
+    starGoal: '기물을 눌러서 움직이고, ⭐ 별을 모두 먹어 보세요!',
+    mateTarget: '🎯 목표: 한 수로 체크메이트!',
+    starsLeft: '⭐ 남은 별: {n}개',
+    lessonCanGo: '갈 수 있는 칸: {n}개',
+    lessonCantMove: '지금은 움직일 수 없어요.',
+    tapWhite: '먼저 흰색 기물을 눌러 주세요.',
+    notMate: '아쉬워요! 이 수로는 체크메이트가 안 돼요. 다른 수를 찾아봐요.',
+    mateDone: '🏆 체크메이트 성공! 모든 레슨을 끝냈어요!',
+    starsDone: '🎉 잘했어요! 별을 모두 먹었어요!',
+    stuck: '더 갈 수 있는 칸이 없어요. "다시 하기"를 눌러 보세요.',
+    ateStar: '별을 먹었어요! 남은 별: {n}개',
+    leftStars: '남은 별: {n}개',
+    opened: '레슨 {id} ({title})이 열렸어요!',
+    desc: {
+      p: '🐾 폰: 앞으로 한 칸 가요. 처음에는 두 칸도 갈 수 있어요. 잡을 때는 비스듬히 앞으로 잡아요.',
+      r: '🏰 룩: 앞뒤옆으로 쭉 갈 수 있어요.',
+      n: '🐴 나이트: ㄱ자 모양으로 뛰어요. 다른 기물을 뛰어넘을 수 있어요.',
+      b: '⛪ 비숍: 대각선으로 쭉 갈 수 있어요.',
+      q: '👑 퀸: 앞뒤옆과 대각선으로 쭉 갈 수 있어요. 가장 힘이 센 기물이에요.',
+      k: '🤴 킹: 주변 한 칸씩만 갈 수 있어요. 킹이 잡히면 게임이 끝나요.'
+    },
+    praise: ['잘했어요! 🎉', '좋은 수예요! ⭐', '멋져요! 👏', '대단해요! 🌟', '똑똑해요! 😊']
+  },
+  en: {
+    title: "Black Knight Scott's Castle",
+    h1: "🏰 Black Knight Scott's Castle",
+    sub: 'A game for our beloved sons and their friends',
+    learn: '📘 Learn', play: '🎮 Play',
+    modeQ: 'How do you want to play?', pvp: '👫 Play with a friend', ai: '🤖 Play with the computer',
+    backHome: '← Home', back: '← Back',
+    levelQ: 'Choose the computer level',
+    easy: '🐥 Beginner (captures when it can)',
+    normal: '🦅 Intermediate (thinks 2 moves ahead)',
+    hard: '🐉 Advanced (thinks 3 moves ahead)',
+    tapPiece: 'Tap a piece to move it.',
+    capW: 'Captured by White:', capB: 'Captured by Black:',
+    thinking: 'The computer is thinking... 🤔',
+    home: 'Home', undo: '↩ Undo', hint: '💡 Hint',
+    soundOn: '🔈 Sound on', soundOff: '🔊 Sound off',
+    learnTitle: '📘 Learn Chess', learnSub: 'Clear the lessons one by one.',
+    nextLesson: 'Next lesson ▶', onceMore: 'Once more', toList: 'Lesson list',
+    retry: '↻ Try again', backList: '← Lesson list',
+    white: 'White', black: 'Black', you: ' (you)', computer: ' (computer)',
+    turn: "{icon} {color}'s turn{who}",
+    turnCheck: "⚠️ {color}'s turn{who} · The king is under attack!",
+    bannerMate: '🏆 Checkmate! {color} wins',
+    bannerStale: "🤝 Stalemate! It's a draw",
+    startAi: 'You are playing the computer. You are White. Tap a piece to move it.',
+    startPvp: 'You are playing a friend. White goes first. Tap a piece to move it.',
+    enemyPiece: "That is your opponent's piece. Tap one of your own pieces first.",
+    pickOwn: 'Tap one of your pieces first.',
+    cantMove: "This piece can't move right now. Try another one.",
+    canGo: 'Squares you can go to: {n} (green dot = empty square, red border = capture)',
+    yellow: '⚠️ Yellow squares are where your opponent could capture you.',
+    mateSay: '🏆 Checkmate! {color} wins! 🎉',
+    staleSay: "🤝 Stalemate! There are no moves left, so it's a draw.",
+    moved: 'You moved the {name}.',
+    aiMoved: 'The computer moved its {name}.',
+    checkSay: 'The king is under attack! Protect your king!',
+    noUndo: 'There are no moves to undo.',
+    undone: 'Move undone. Try again!',
+    hintSay: '💡 Hint: try moving the glowing {name}.',
+    lessonN: 'Lesson {id}', cleared: 'Cleared!', tapStart: 'Tap to start', locked: 'Finish the lesson before first',
+    lessonTitle: 'Lesson {id}: {title}',
+    mateGoal: 'Checkmate the black king in one move!',
+    starGoal: 'Tap the piece to move it and collect all the ⭐ stars!',
+    mateTarget: '🎯 Goal: checkmate in one move!',
+    starsLeft: '⭐ Stars left: {n}',
+    lessonCanGo: 'Squares you can go to: {n}',
+    lessonCantMove: "It can't move right now.",
+    tapWhite: 'Tap the white piece first.',
+    notMate: "So close! That move isn't checkmate. Try another one.",
+    mateDone: '🏆 Checkmate! You finished all the lessons!',
+    starsDone: '🎉 Great job! You collected all the stars!',
+    stuck: 'No more moves. Tap "Try again".',
+    ateStar: 'You got a star! Stars left: {n}',
+    leftStars: 'Stars left: {n}',
+    opened: 'Lesson {id} ({title}) is now open!',
+    desc: {
+      p: '🐾 Pawn: moves one square forward. On its first move it can go two. It captures diagonally forward.',
+      r: '🏰 Rook: moves straight forward, backward, and sideways as far as it likes.',
+      n: '🐴 Knight: jumps in an L shape. It can jump over other pieces.',
+      b: '⛪ Bishop: moves diagonally as far as it likes.',
+      q: '👑 Queen: moves straight and diagonally as far as it likes. The strongest piece!',
+      k: '🤴 King: moves one square in any direction. If the king is trapped, the game is over.'
+    },
+    praise: ['Great job! 🎉', 'Nice move! ⭐', 'Awesome! 👏', 'Amazing! 🌟', 'So smart! 😊']
+  }
 };
-const PRAISE = ['잘했어요! 🎉', '좋은 수예요! ⭐', '멋져요! 👏', '대단해요! 🌟', '똑똑해요! 😊'];
+const LANG_KEY = 'chess-lang-v1';
+let lang = 'ko';
+// t('key', {n: 3}) → 지금 언어의 글자, {n} 자리에 값을 넣음
+function t(key, vars) {
+  let s = I18N[lang][key];
+  if (vars) for (const k in vars) s = s.split('{' + k + '}').join(vars[k]);
+  return s;
+}
+const desc = (tp) => I18N[lang].desc[tp];
 const CONFETTI_COLORS = ['#e8c46a', '#b71c1c', '#2e7d4f', '#f5e6c0', '#8e5bd1', '#d4a64a'];
 const STORE_KEY = 'chess-lesson-progress-v1';
 
@@ -794,11 +1006,12 @@ function confetti() {
 
 // ---- 칭찬 메시지 ----
 function praise() {
-  const t = $('toast');
-  t.textContent = PRAISE[Math.floor(Math.random() * PRAISE.length)];
-  t.classList.add('show');
+  const toast = $('toast');
+  const list = I18N[lang].praise;
+  toast.textContent = list[Math.floor(Math.random() * list.length)];
+  toast.classList.add('show');
   clearTimeout(praise.timer);
-  praise.timer = setTimeout(() => t.classList.remove('show'), 1600);
+  praise.timer = setTimeout(() => toast.classList.remove('show'), 1600);
 }
 
 // ---- 진행 상황 저장 (저장이 안 되면 그냥 넘어감) ----
@@ -898,9 +1111,7 @@ function startGame(mode, level) {
     selected: null, targets: new Map(), hint: null, busy: false, timer: null
   });
   $('thinking').hidden = true;
-  say(mode === 'ai'
-    ? '컴퓨터와 대결해요. 나는 흰색이에요. 기물을 눌러서 움직여 보세요.'
-    : '친구와 대결해요. 흰색부터 시작해요. 기물을 눌러서 움직여 보세요.');
+  say(t(mode === 'ai' ? 'startAi' : 'startPvp'));
   show('game');
   renderGame();
 }
@@ -913,13 +1124,13 @@ function renderGame(fromRect, toIdx) {
   });
   if (fromRect && toIdx !== undefined) flashMove($('board'), fromRect, toIdx);
 
-  const turnName = st.turn === 'w' ? '흰색' : '검은색';
-  const who = game.mode === 'ai' ? (st.turn === 'w' ? ' (나)' : ' (컴퓨터)') : '';
+  const color = t(st.turn === 'w' ? 'white' : 'black');
+  const who = game.mode === 'ai' ? t(st.turn === 'w' ? 'you' : 'computer') : '';
   const banner = $('turnBanner');
-  if (status === 'checkmate') banner.textContent = `🏆 체크메이트! ${st.turn === 'w' ? '검은색' : '흰색'} 승리`;
-  else if (status === 'stalemate') banner.textContent = '🤝 스테일메이트! 비겼어요';
-  else if (status === 'check') banner.textContent = `⚠️ ${turnName} 차례${who} · 왕이 공격받고 있어요!`;
-  else banner.textContent = `${st.turn === 'w' ? '⬜' : '⬛'} ${turnName} 차례${who}`;
+  if (status === 'checkmate') banner.textContent = t('bannerMate', { color: t(st.turn === 'w' ? 'black' : 'white') });
+  else if (status === 'stalemate') banner.textContent = t('bannerStale');
+  else if (status === 'check') banner.textContent = t('turnCheck', { color, who });
+  else banner.textContent = t('turn', { icon: st.turn === 'w' ? '⬜' : '⬛', color, who });
   banner.classList.toggle('alert', status === 'check');
 
   const fill = (el, color) => {
@@ -937,7 +1148,7 @@ function renderGame(fromRect, toIdx) {
   const over = status === 'checkmate' || status === 'stalemate';
   $('btnUndo').disabled = game.history.length === 0;
   $('btnHint').disabled = over || game.busy || (game.mode === 'ai' && st.turn === 'b');
-  $('btnSound').textContent = Sound.isMuted() ? '🔈 소리 켜기' : '🔊 소리 끄기';
+  $('btnSound').textContent = t(Sound.isMuted() ? 'soundOn' : 'soundOff');
 }
 
 function onGameSquare(i) {
@@ -953,7 +1164,7 @@ function onGameSquare(i) {
     return;
   }
   if (game.selected !== null) { say(Rules.explainIllegal(st, game.selected, i)); return; }
-  say(p ? '그 기물은 상대 기물이에요. 내 기물을 먼저 눌러 주세요.' : '먼저 내 기물을 눌러 주세요.');
+  say(t(p ? 'enemyPiece' : 'pickOwn'));
 }
 
 function select(i) {
@@ -962,11 +1173,11 @@ function select(i) {
   game.targets = targetMap(st, i);
   const p = st.board[i];
   const n = game.targets.size;
-  let text = DESC[p.t] + '\n';
-  if (n === 0) text += '지금은 움직일 수 없어요. 다른 기물을 골라 보세요.';
+  let text = desc(p.t) + '\n';
+  if (n === 0) text += t('cantMove');
   else {
-    text += `갈 수 있는 칸: ${n}개 (초록 점은 빈 칸, 빨간 테두리는 잡는 칸)`;
-    if ([...game.targets.values()].some((t) => t.danger)) text += '\n⚠️ 노란 칸은 상대가 잡을 수 있는 칸이에요.';
+    text += t('canGo', { n });
+    if ([...game.targets.values()].some((x) => x.danger)) text += '\n' + t('yellow');
   }
   say(text);
   renderGame();
@@ -992,22 +1203,22 @@ function makeMove(m) {
   else Sound.move();
   renderGame(fromRect, m.to);
 
-  const who = mover === 'b' && game.mode === 'ai' ? '컴퓨터가 ' : '';
+  const byAI = mover === 'b' && game.mode === 'ai';
   if (status === 'checkmate') {
-    say(`🏆 체크메이트! ${mover === 'w' ? '흰색' : '검은색'}이 이겼어요! 🎉`);
+    say(t('mateSay', { color: t(mover === 'w' ? 'white' : 'black') }));
     confetti();
     return;
   }
   if (status === 'stalemate') {
-    say('🤝 스테일메이트! 둘 수 있는 수가 없어서 비겼어요.');
+    say(t('staleSay'));
     return;
   }
   if (isCap || status === 'check') {
     if (game.mode === 'pvp' || mover === 'w') praise();
   }
-  const base = `${who}${Rules.PIECE_NAMES[mp.t]} 기물을 옮겼어요.`;
+  const base = t(byAI ? 'aiMoved' : 'moved', { name: Rules.pieceName(mp.t) });
   if (status === 'check') {
-    say(`${base}\n왕이 공격받고 있어요! 왕을 지켜요`);
+    say(base + '\n' + t('checkSay'));
   } else {
     say(base);
   }
@@ -1030,7 +1241,7 @@ function scheduleAI() {
 }
 
 function undo() {
-  if (!game.history.length) { say('되돌릴 수 있는 수가 없어요.'); return; }
+  if (!game.history.length) { say(t('noUndo')); return; }
   clearTimeout(game.timer);
   game.timer = null;
   game.busy = false;
@@ -1041,7 +1252,7 @@ function undo() {
   game.selected = null;
   game.targets = new Map();
   game.hint = null;
-  say('한 수를 되돌렸어요. 다시 두어 봐요.');
+  say(t('undone'));
   renderGame();
 }
 
@@ -1054,7 +1265,7 @@ function showHint() {
   game.selected = null;
   game.targets = new Map();
   game.hint = { from: m.from, to: m.to };
-  say(`💡 힌트: 반짝이는 ${Rules.PIECE_NAMES[st.board[m.from].t]} 기물을 옮겨 보세요.`);
+  say(t('hintSay', { name: Rules.pieceName(st.board[m.from].t) }));
   renderGame();
 }
 
@@ -1078,7 +1289,8 @@ function renderLessonList() {
     btn.className = 'lessonCard';
     btn.disabled = !open;
     const mark = done ? '✅' : open ? '📘' : '🔒';
-    btn.innerHTML = `<span>${mark}</span><b>레슨 ${L.id}</b><span>${L.title}</span><small>${open ? (done ? '클리어!' : '눌러서 시작') : '앞 레슨을 먼저 끝내요'}</small>`;
+    const note = open ? t(done ? 'cleared' : 'tapStart') : t('locked');
+    btn.innerHTML = `<span>${mark}</span><b>${t('lessonN', { id: L.id })}</b><span>${Rules.lessonText(L).title}</span><small>${note}</small>`;
     btn.addEventListener('click', () => startLesson(L.id));
     grid.appendChild(btn);
   });
@@ -1087,14 +1299,13 @@ function renderLessonList() {
 function startLesson(id) {
   const L = Rules.LESSONS.find((x) => x.id === id);
   Object.assign(lesson, { data: L, state: Rules.lessonState(L), selected: null, targets: new Map(), finished: false });
-  $('lessonTitle').textContent = `레슨 ${L.id}: ${L.title}`;
-  $('lessonHow').textContent = `📝 ${L.how}`;
+  const lt = Rules.lessonText(L);
+  $('lessonTitle').textContent = t('lessonTitle', { id: L.id, title: lt.title });
+  $('lessonHow').textContent = `📝 ${lt.how}`;
   $('lessonDone').hidden = true;
   show('lesson');
   renderLesson();
-  $('lessonPanel').textContent = L.mate
-    ? '한 수로 검은 왕을 체크메이트 하세요!'
-    : '기물을 눌러서 움직이고, ⭐ 별을 모두 먹어 보세요!';
+  $('lessonPanel').textContent = t(L.mate ? 'mateGoal' : 'starGoal');
 }
 
 function renderLesson(fromRect, toIdx) {
@@ -1104,8 +1315,8 @@ function renderLesson(fromRect, toIdx) {
   });
   if (fromRect && toIdx !== undefined) flashMove($('lessonBoard'), fromRect, toIdx);
   $('lessonStars').textContent = lesson.data.mate
-    ? '🎯 목표: 한 수로 체크메이트!'
-    : `⭐ 남은 별: ${Rules.starsLeft(st)}개`;
+    ? t('mateTarget')
+    : t('starsLeft', { n: Rules.starsLeft(st) });
 }
 
 function onLessonSquare(i) {
@@ -1116,9 +1327,9 @@ function onLessonSquare(i) {
   if (p && p.c === 'w' && p.t !== 'star') {
     lesson.selected = i;
     lesson.targets = targetMap(st, i);
-    $('lessonPanel').textContent = DESC[p.t] + (lesson.targets.size
-      ? `\n갈 수 있는 칸: ${lesson.targets.size}개`
-      : '\n지금은 움직일 수 없어요.');
+    $('lessonPanel').textContent = desc(p.t) + '\n' + (lesson.targets.size
+      ? t('lessonCanGo', { n: lesson.targets.size })
+      : t('lessonCantMove'));
     renderLesson();
     return;
   }
@@ -1126,7 +1337,7 @@ function onLessonSquare(i) {
     $('lessonPanel').textContent = Rules.explainIllegal(st, lesson.selected, i);
     return;
   }
-  $('lessonPanel').textContent = '먼저 흰색 기물을 눌러 주세요.';
+  $('lessonPanel').textContent = t('tapWhite');
 }
 
 function lessonMove(m) {
@@ -1139,13 +1350,13 @@ function lessonMove(m) {
 
   if (lesson.data.mate) {
     if (Rules.status(ns) !== 'checkmate') {
-      $('lessonPanel').textContent = '아쉬워요! 이 수로는 체크메이트가 안 돼요. 다른 수를 찾아봐요.';
+      $('lessonPanel').textContent = t('notMate');
       renderLesson();
       return;
     }
     lesson.state = ns;
     renderLesson(fromRect, m.to);
-    finishLesson('🏆 체크메이트 성공! 모든 레슨을 끝냈어요!');
+    finishLesson(t('mateDone'));
     return;
   }
 
@@ -1154,13 +1365,13 @@ function lessonMove(m) {
   renderLesson(fromRect, m.to);
   const left = Rules.starsLeft(ns);
   if (left === 0) {
-    finishLesson('🎉 잘했어요! 별을 모두 먹었어요!');
+    finishLesson(t('starsDone'));
     return;
   }
   if (isStar) praise();
   $('lessonPanel').textContent = Rules.allLegalMoves(ns, 'w').length === 0
-    ? '더 갈 수 있는 칸이 없어요. "다시 하기"를 눌러 보세요.'
-    : `별을 먹었어요! 남은 별: ${left}개`;
+    ? t('stuck')
+    : t(isStar ? 'ateStar' : 'leftStars', { n: left });
 }
 
 function finishLesson(msg) {
@@ -1169,12 +1380,35 @@ function finishLesson(msg) {
   if (!progress.done.includes(id)) progress.done.push(id);
   saveProgress();
   const next = Rules.LESSONS.find((x) => x.id === id + 1);
-  $('lessonDoneText').textContent = msg + (next ? `\n레슨 ${next.id} (${next.title})이 열렸어요!` : '');
+  $('lessonDoneText').textContent = msg + (next ? '\n' + t('opened', { id: next.id, title: Rules.lessonText(next).title }) : '');
   $('btnNextLesson').hidden = !next;
   $('lessonDone').hidden = false;
   Sound.win();
   confetti();
 }
+
+// ================= 언어 바꾸기 =================
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.title = t('title');
+  document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-lang]').forEach((b) => b.classList.toggle('on', b.dataset.lang === lang));
+}
+function setLang(l) {
+  lang = I18N[l] ? l : 'ko';
+  Rules.setLang(lang);
+  try { localStorage.setItem(LANG_KEY, lang); } catch (e) { /* 저장이 안 돼도 괜찮아요 */ }
+  applyLang();
+}
+function loadLang() {
+  try {
+    const v = localStorage.getItem(LANG_KEY);
+    if (I18N[v]) return v;
+  } catch (e) { /* 무시 */ }
+  return 'ko';
+}
+document.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => setLang(b.dataset.lang)));
+setLang(loadLang());
 
 // ================= 연결(버튼과 칸 클릭) =================
 $('btnLearn').addEventListener('click', () => { renderLessonList(); show('learn'); });

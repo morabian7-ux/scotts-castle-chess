@@ -90,6 +90,23 @@ test('내 기물이 있는 칸으로는 갈 수 없음', () => {
   assert.ok(R.explainIllegal(s, R.toIndex('a1'), R.toIndex('a2')).includes('내 기물'));
 });
 
+test('영어로 바꾸면 이유와 기물 이름도 영어로 나오고, 다시 한국어로 돌아옴', () => {
+  const s = R.startState();
+  R.setLang('en');
+  try {
+    assert.ok(R.explainIllegal(s, R.toIndex('e7'), R.toIndex('e5')).includes("opponent's turn"));
+    assert.ok(R.explainIllegal(s, R.toIndex('a1'), R.toIndex('a2')).includes('your own piece'));
+    assert.ok(R.explainIllegal(s, R.toIndex('b1'), R.toIndex('b3')).includes('The knight'));
+    assert.strictEqual(R.pieceName('q'), 'queen');
+    assert.strictEqual(R.lessonText(R.LESSONS[0]).title, 'Pawn');
+    for (const L of R.LESSONS) assert.ok(R.lessonText(L).how, `레슨 ${L.id} 영어 설명이 없어요`);
+  } finally {
+    R.setLang('ko');
+  }
+  assert.ok(R.explainIllegal(s, R.toIndex('e7'), R.toIndex('e5')).includes('상대 차례'));
+  assert.strictEqual(R.lessonText(R.LESSONS[0]).title, '폰');
+});
+
 // ---------- 특수 규칙 ----------
 test('캐슬링(킹 쪽): 사이가 비고 지나가는 칸이 안전하면 가능, 왕은 g1, 룩은 f1로', () => {
   const s = playAll(R.startState(), [
