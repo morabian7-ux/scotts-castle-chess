@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>마법 체스 성</title>
+<style>
+  :root {
+    --board: min(70vh, 72vw, 600px);
+    --light: #fff8e1;
+    --dark: #f8bbd0;
+    --ink: #4a2c40;
+    --accent: #c2185b;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; }
+  body {
+    font-family: "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
+    font-size: 20px;
+    color: var(--ink);
+    background-color: #ffe0ef;
+    background-image: linear-gradient(160deg, #ffe0ef 0%, #dff0ff 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .screen { display: none; padding: 14px 16px 24px; max-width: 1100px; margin: 0 auto; text-align: center; }
+  .screen.active { display: block; }
+  h1 { font-size: 48px; margin: 28px 0 8px; }
+  h2 { font-size: 34px; margin: 10px 0 18px; }
+  .sub { font-size: 24px; margin: 0 0 16px; }
+
+  button {
+    font: inherit; font-weight: 800; font-size: 22px;
+    min-height: 56px; padding: 12px 22px; margin: 6px;
+    border: 0; border-radius: 18px; cursor: pointer;
+    background: var(--accent); color: #fff;
+    box-shadow: 0 5px 0 #8e0f40;
+  }
+  button:active { transform: translateY(3px); box-shadow: 0 2px 0 #8e0f40; }
+  button:disabled { background: #d7ccc8; color: #6d4c41; box-shadow: 0 4px 0 #bcaaa4; cursor: not-allowed; }
+  button.ghost { background: #fff; color: var(--accent); border: 3px solid var(--accent); box-shadow: 0 5px 0 #f48fb1; }
+  button.big { min-width: 280px; font-size: 28px; padding: 18px 30px; }
+  .menu { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px; }
+
+  /* 게임 화면 */
+  .banner {
+    max-width: 900px; margin: 0 auto 12px; padding: 12px 18px;
+    background: #fff; border-radius: 18px; font-size: 30px; font-weight: 900;
+    box-shadow: 0 4px 0 #f8bbd0;
+  }
+  .banner.alert { background: #ffebee; color: #b71c1c; animation: shake .5s 2; }
+  @keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+  .gameMain { display: flex; gap: 18px; justify-content: center; align-items: flex-start; flex-wrap: wrap; }
+  .board {
+    width: var(--board); height: var(--board);
+    display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr);
+    border: 6px solid #8e4f6b; border-radius: 12px; overflow: hidden;
+  }
+  .sq {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; line-height: 1; user-select: none;
+    font-size: calc(var(--board) / 8 * 0.8);
+  }
+  .sq.light { background: var(--light); }
+  .sq.dark { background: var(--dark); }
+  .sq.last::before { content: ""; position: absolute; inset: 0; background: rgba(255, 213, 79, .4); }
+  .sq.sel { box-shadow: inset 0 0 0 6px #7e57c2; }
+  .sq.dot::after {
+    content: ""; position: absolute; width: 30%; height: 30%; border-radius: 50%;
+    background: #2ea043; box-shadow: 0 0 0 3px #fff; z-index: 1;
+  }
+  .sq.capture { box-shadow: inset 0 0 0 7px #e53935; }
+  .sq.danger { background: #fff176 !important; }
+  .sq.check { animation: blink .6s steps(2, start) infinite; }
+  @keyframes blink { to { background: #ef5350; } }
+  .sq.hint { animation: hint 1s ease-in-out infinite alternate; }
+  @keyframes hint { from { box-shadow: inset 0 0 0 4px #ff9800; } to { box-shadow: inset 0 0 0 12px #ffeb3b; } }
+  .pc { pointer-events: none; line-height: 1; }
+  .pc.white { color: #fff; -webkit-text-stroke: 1.5px #333; text-shadow: 0 3px 4px rgba(0, 0, 0, .35); }
+  .pc.black { color: #1d1d1d; }
+  .pc.star { font-size: 52%; }
+
+  .side { width: 300px; display: flex; flex-direction: column; gap: 12px; text-align: left; }
+  .panel {
+    background: #fff; border-radius: 18px; padding: 14px 16px; min-height: 170px;
+    font-size: 21px; line-height: 1.55; white-space: pre-line; box-shadow: 0 4px 0 #f8bbd0;
+  }
+  .captured { background: #fff; border-radius: 18px; padding: 10px 14px; font-size: 20px; }
+  .captured div { margin: 4px 0; }
+  .captured .pc { font-size: 30px; margin-right: 2px; }
+  .thinking { background: #e8f5e9; border-radius: 14px; padding: 10px 14px; font-size: 20px; font-weight: 700; }
+  .btnRow { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 12px; }
+
+  /* 배우기 */
+  .lessonGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin: 10px 0 20px; }
+  .lessonCard {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    background: #fff; color: var(--ink); box-shadow: 0 5px 0 #f8bbd0; padding: 18px 12px; min-height: 110px; margin: 0;
+  }
+  .lessonCard:disabled { background: #eeeeee; color: #757575; box-shadow: 0 5px 0 #bdbdbd; }
+  .lessonCard b { font-size: 26px; }
+  .lessonCard small { font-size: 17px; }
+  .how { font-size: 22px; font-weight: 700; margin: 6px 0 10px; }
+  .stars { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+  .doneBox {
+    max-width: 560px; margin: 16px auto 0; background: #fff; border-radius: 20px;
+    padding: 18px; box-shadow: 0 6px 0 #f8bbd0; font-size: 24px; font-weight: 800; white-space: pre-line;
+  }
+
+  #toast {
+    position: fixed; top: 14px; left: 50%; transform: translate(-50%, -160%); transition: transform .3s ease;
+    background: #fff; border: 3px solid var(--accent); border-radius: 20px; padding: 10px 22px;
+    font-size: 26px; font-weight: 900; z-index: 50; pointer-events: none; white-space: nowrap;
+  }
+  #toast.show { transform: translate(-50%, 0); }
+  #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
+
+  @media (max-width: 760px) {
+    .side { width: 100%; max-width: 560px; }
+    :root { --board: min(92vw, 560px); }
+  }
+  /* ===== 중세 마법 테마 (뒤에 오는 규칙이 앞의 규칙을 덮어씀) ===== */
+  :root {
+    --board: min(70vh, 72vw, 600px);
+    --light: #e8dcb5;
+    --dark: #8a7558;
+    --ink: #3b2415;
+    --accent: #7a4a1e;
+    --gold: #e8c46a;
+    --parch-top: #f6e7bd;
+    --parch-bot: #e2c98f;
+    --edge: #8a6330;
+  }
+  html, body { background: #120d0a; }
+  body {
+    font-family: "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
+    color: #f5e6c0;
+    background-color: #120d0a;
+    background-image:
+      radial-gradient(ellipse at 50% -10%, rgba(255, 170, 70, .22), transparent 55%),
+      radial-gradient(ellipse at 50% 120%, rgba(90, 60, 140, .25), transparent 60%),
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, .015) 0 2px, transparent 2px 64px),
+      linear-gradient(180deg, #1c1510 0%, #0d0907 100%);
+    background-attachment: fixed;
+  }
+  /* 벽에 걸린 횃불 느낌의 흔들리는 빛 */
+  body::before, body::after {
+    content: ""; position: fixed; top: -60px; width: 300px; height: 300px;
+    pointer-events: none; z-index: 0;
+    background: radial-gradient(circle, rgba(255, 150, 50, .35), transparent 65%);
+    animation: flicker 2.4s ease-in-out infinite alternate;
+  }
+  body::before { left: -120px; }
+  body::after { right: -120px; animation-delay: -1.2s; }
+  @keyframes flicker { from { opacity: .55; transform: scale(.96); } to { opacity: 1; transform: scale(1.05); } }
+
+  .screen { position: relative; z-index: 1; }
+  h1, h2 {
+    font-family: "Palatino Linotype", "Book Antiqua", Georgia, "Times New Roman", serif;
+    color: var(--gold);
+    text-shadow: 0 2px 0 #3a2208, 0 0 18px rgba(255, 190, 90, .45);
+    letter-spacing: .5px;
+  }
+  h1 { font-size: 52px; }
+  .sub { color: #e9d7a8; font-family: Georgia, serif; font-style: italic; font-size: 24px; }
+
+  /* 나무 + 청동 버튼 */
+  button {
+    color: #ffe9b0;
+    background: linear-gradient(180deg, #9a6a33 0%, #6b4220 55%, #4a2c14 100%);
+    border: 3px solid #d4a64a;
+    box-shadow: 0 5px 0 #2a180a, 0 0 12px rgba(255, 190, 90, .25), inset 0 1px 0 rgba(255, 230, 160, .35);
+    text-shadow: 0 2px 0 #2a1608;
+  }
+  button:active { box-shadow: 0 2px 0 #2a180a, inset 0 2px 4px rgba(0, 0, 0, .4); }
+  button:disabled {
+    background: linear-gradient(180deg, #5a524a, #3a342e); color: #9c8f7a;
+    border-color: #6d6252; box-shadow: 0 4px 0 #1d1914; text-shadow: none;
+  }
+  button.ghost {
+    background: linear-gradient(180deg, #f3e4b8, #dcc58c); color: #4a2a10;
+    border: 3px solid var(--edge); box-shadow: 0 5px 0 #5a3a18; text-shadow: none;
+  }
+
+  /* 양피지(두루마리) 패널 */
+  .banner, .panel, .captured, .doneBox, .lessonCard, #toast {
+    background: linear-gradient(180deg, var(--parch-top), var(--parch-bot));
+    color: var(--ink);
+    border: 3px solid var(--edge);
+    box-shadow: inset 0 0 28px rgba(120, 80, 30, .35), 0 5px 0 #2a180a;
+    text-shadow: none;
+  }
+  .banner { font-family: "Palatino Linotype", Georgia, serif; box-shadow: inset 0 0 28px rgba(120, 80, 30, .35), 0 0 22px rgba(255, 190, 90, .3), 0 6px 0 #2a180a; }
+  .banner.alert { background: linear-gradient(180deg, #f6c9b5, #d9735a); color: #5a0d0d; }
+  .lessonCard:disabled { background: #4a4238; color: #a89c86; border-color: #5a4e40; box-shadow: 0 5px 0 #2a180a; }
+  .how { color: #f5e6c0; font-style: italic; }
+  .stars { color: var(--gold); text-shadow: 0 0 10px rgba(255, 190, 90, .4); }
+  .thinking { background: #2a1c10; color: #ffd98a; border: 2px solid var(--edge); }
+  #toast { font-family: Georgia, serif; border-width: 3px; }
+
+  /* 돌로 만든 체스판과 청동 테두리 */
+  .board {
+    border: 8px solid #5a3c1e; border-radius: 4px;
+    box-shadow: 0 0 0 3px #d4a64a, 0 0 0 6px #2a180a, 0 16px 34px rgba(0, 0, 0, .6);
+  }
+  .sq.light { background: radial-gradient(circle at 30% 30%, #f1e6c4, var(--light) 60%, #cdbb8c); }
+  .sq.dark { background: radial-gradient(circle at 30% 30%, #9b8a6c, var(--dark) 60%, #5f4c36); }
+  .sq.sel { box-shadow: inset 0 0 0 6px var(--gold), inset 0 0 16px rgba(232, 196, 106, .7); }
+  .sq.dot::after {
+    background: radial-gradient(circle at 35% 35%, #c9ffd9, #1f8a4c);
+    box-shadow: 0 0 8px #7dffb0, 0 0 0 2px #1a0f08;
+  }
+  .sq.capture { box-shadow: inset 0 0 0 7px #b71c1c; }
+
+  /* 체스 기물: 흰 돌 / 흑요석 */
+  .pc.white { color: #fbf6e9; -webkit-text-stroke: 1.5px #3a2a18; text-shadow: 0 0 6px rgba(255, 236, 190, .7), 0 3px 4px rgba(0, 0, 0, .5); }
+  .pc.black { color: #1e1a18; text-shadow: 0 0 5px rgba(232, 196, 106, .4), 0 2px 3px rgba(0, 0, 0, .5); }
+  .captured .pc.black { color: #1e1a18; }
+  .captured .pc.white { color: #fbf6e9; }
+  #confetti { z-index: 40; }
+
+  /* ===== 아이폰(터치 화면) 맞춤 ===== */
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    -webkit-tap-highlight-color: transparent;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  button, .sq { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  .board, .sq, .pc { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+  button:focus { outline: none; }
+  button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+  @media (max-width: 760px) {
+    .screen { padding: 10px 12px 28px; }
+    h1 { font-size: 38px; margin: 18px 0 6px; }
+    h2 { font-size: 28px; }
+    .sub { font-size: 20px; }
+    body { font-size: 19px; }
+    .banner { font-size: 22px; padding: 10px 12px; }
+    :root { --board: min(92vw, 500px); }
+    .board { width: var(--board); height: var(--board); }
+    .side { width: 100%; max-width: 500px; }
+    .panel { min-height: 0; font-size: 19px; }
+    .captured { font-size: 18px; }
+    button { font-size: 20px; padding: 12px 16px; }
+    button.big { min-width: 0; width: 100%; max-width: 340px; font-size: 22px; padding: 16px 20px; }
+    .btnRow button { flex: 1 1 42%; max-width: 200px; }
+    .lessonGrid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .lessonCard { min-height: 96px; padding: 12px 8px; }
+    .lessonCard b { font-size: 20px; }
+    .lessonCard small { font-size: 14px; }
+    #toast { font-size: 20px; max-width: 92vw; white-space: normal; text-align: center; }
+  }
+  @media (max-width: 360px) {
+    .lessonGrid { grid-template-columns: 1fr; }
+    .btnRow button { flex: 1 1 100%; max-width: none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+<div id="toast"></div>
+
+<!-- 1. 시작 화면 -->
+<section id="home" class="screen active">
+  <h1>🏰 마법 체스 성</h1>
+  <p class="sub">마법 기사들의 체스를 배우고, 친구와 겨뤄 봐요!</p>
+  <div class="menu">
+    <button class="big" id="btnLearn">📘 배우기</button>
+    <button class="big" id="btnPlay">🎮 게임하기</button>
+  </div>
+</section>
+
+<!-- 게임하기: 대결 방식 -->
+<section id="mode" class="screen">
+  <h2>어떻게 할까요?</h2>
+  <div class="menu">
+    <button class="big" id="btnPvp">👫 친구와 하기</button>
+    <button class="big" id="btnAi">🤖 컴퓨터와 하기</button>
+    <button class="ghost" data-go="home">← 처음으로</button>
+  </div>
+</section>
+
+<!-- 컴퓨터 난이도 -->
+<section id="level" class="screen">
+  <h2>컴퓨터 난이도를 골라요</h2>
+  <div class="menu">
+    <button class="big" data-level="baby">🐣 아기 (아무 데나 둬요)</button>
+    <button class="big" data-level="easy">🐥 쉬움 (잡을 수 있으면 잡아요)</button>
+    <button class="big" data-level="normal">🦅 보통 (두 수 앞까지 생각해요)</button>
+    <button class="ghost" data-go="mode">← 뒤로</button>
+  </div>
+</section>
+
+<!-- 게임 화면 -->
+<section id="game" class="screen">
+  <div id="turnBanner" class="banner">⬜ 흰색 차례</div>
+  <div class="gameMain">
+    <div id="board" class="board"></div>
+    <aside class="side">
+      <div id="panel" class="panel">기물을 눌러서 움직여 보세요.</div>
+      <div class="captured">
+        <div>흰색이 잡은 기물: <span id="capByWhite"></span></div>
+        <div>검은색이 잡은 기물: <span id="capByBlack"></span></div>
+      </div>
+      <div id="thinking" class="thinking" hidden>컴퓨터가 생각하고 있어요... 🤔</div>
+    </aside>
+  </div>
+  <div class="btnRow">
+    <button class="ghost" id="btnHome">처음으로</button>
+    <button id="btnUndo">↩ 되돌리기</button>
+    <button id="btnHint">💡 힌트</button>
+    <button class="ghost" id="btnSound">🔊 소리 끄기</button>
+  </div>
+</section>
+
+<!-- 배우기 목록 -->
+<section id="learn" class="screen">
+  <h2>📘 체스 배우기</h2>
+  <p class="sub">레슨을 차례대로 클리어해요.</p>
+  <div id="lessonGrid" class="lessonGrid"></div>
+  <button class="ghost" id="btnLearnHome">← 처음으로</button>
+</section>
+
+<!-- 레슨 화면 -->
+<section id="lesson" class="screen">
+  <h2 id="lessonTitle"></h2>
+  <p id="lessonHow" class="how"></p>
+  <p id="lessonStars" class="stars"></p>
+  <div class="gameMain">
+    <div id="lessonBoard" class="board"></div>
+    <aside class="side">
+      <div id="lessonPanel" class="panel"></div>
+    </aside>
+  </div>
+  <div id="lessonDone" class="doneBox" hidden>
+    <div id="lessonDoneText"></div>
+    <div class="btnRow">
+      <button id="btnNextLesson">다음 레슨 ▶</button>
+      <button class="ghost" id="btnDoneRetry">한 번 더</button>
+      <button class="ghost" id="btnDoneList">목록으로</button>
+    </div>
+  </div>
+  <div class="btnRow">
+    <button class="ghost" id="btnRetry">↻ 다시 하기</button>
+    <button class="ghost" id="btnListBack">← 목록으로</button>
+  </div>
+</section>
+
+<script>
+/* ===RULES:START=== */
+/* 규칙 코드: 화면(DOM)과 완전히 분리되어 있어요. 테스트(tests/rules.test.js)도 이 부분을 읽어요. */
+const Rules = (() => {
+  const FILES = 'abcdefgh';
+  const PIECE_NAMES = { p: '폰', r: '룩', n: '나이트', b: '비숍', q: '퀸', k: '킹', star: '별' };
+  const MOVE_HINT = {
+    p: '폰은 앞으로만 가고, 잡을 때는 비스듬히 앞으로 잡아요.',
+    r: '룩은 앞뒤옆으로만 갈 수 있어요.',
+    n: '나이트는 ㄱ자 모양으로만 뛸 수 있어요.',
+    b: '비숍은 대각선으로만 갈 수 있어요.',
+    q: '퀸은 앞뒤옆과 대각선으로 갈 수 있어요.',
+    k: '킹은 주변 한 칸씩만 갈 수 있어요.'
+  };
+  const VALUE = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0, star: 0 };
+  const KNIGHT = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]];
+  const KING = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+  const DIAG = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+  const ORTH = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+  const ALL_DIRS = DIAG.concat(ORTH);
+
+  // 칸 번호: 0(a8) ~ 63(h1). 한 줄이 8칸.
+  const toIndex = (name) => (8 - Number(name[1])) * 8 + FILES.indexOf(name[0]);
+  const toName = (i) => FILES[i % 8] + (8 - Math.floor(i / 8));
+  const rowOf = (i) => Math.floor(i / 8);
+  const colOf = (i) => i % 8;
+  const inside = (r, c) => r >= 0 && r < 8 && c >= 0 && c < 8;
+  const enemyOf = (c) => (c === 'w' ? 'b' : 'w');
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+  function emptyState() {
+    return { board: Array(64).fill(null), turn: 'w', castle: { wK: false, wQ: false, bK: false, bQ: false }, ep: -1, last: null, captured: [] };
+  }
+  function cloneState(s) {
+    return {
+      board: s.board.map((p) => (p ? { t: p.t, c: p.c } : null)),
+      turn: s.turn,
+      castle: { ...s.castle },
+      ep: s.ep,
+      last: s.last ? { ...s.last } : null,
+      captured: s.captured.map((p) => ({ ...p }))
+    };
+  }
+  function startState() {
+    const s = emptyState();
+    const back = ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'];
+    for (let c = 0; c < 8; c++) {
+      s.board[c] = { t: back[c], c: 'b' };
+      s.board[8 + c] = { t: 'p', c: 'b' };
+      s.board[48 + c] = { t: 'p', c: 'w' };
+      s.board[56 + c] = { t: back[c], c: 'w' };
+    }
+    s.castle = { wK: true, wQ: true, bK: true, bQ: true };
+    return s;
+  }
+
+  // 레슨 판 만들기: 기물 하나와 별(star)들
+  function lessonState(L) {
+    const s = emptyState();
+    if (L.setup) {
+      for (const [at, t, c] of L.setup) s.board[toIndex(at)] = { t, c };
+      return s;
+    }
+    s.board[toIndex(L.piece.at)] = { t: L.piece.t, c: 'w' };
+    for (const at of L.stars) s.board[toIndex(at)] = { t: 'star', c: 'b' };
+    return s;
+  }
+
+  const LESSONS = [
+    { id: 1, title: '폰', how: '폰은 앞으로 한 칸 가고, 비스듬히 앞에 있는 별을 먹어요.', piece: { t: 'p', at: 'e2' }, stars: ['d3', 'e4', 'f5'] },
+    { id: 2, title: '룩', how: '룩은 앞뒤옆으로 쭉 가요. 가는 길에 막는 것이 없어야 해요.', piece: { t: 'r', at: 'a1' }, stars: ['a5', 'e5', 'e1'] },
+    { id: 3, title: '비숍', how: '비숍은 대각선으로 쭉 가요.', piece: { t: 'b', at: 'c1' }, stars: ['f4', 'd6', 'b4'] },
+    { id: 4, title: '나이트', how: '나이트는 ㄱ자로 뛰어요. 가운데 기물이 있어도 뛰어넘어요.', piece: { t: 'n', at: 'b1' }, stars: ['c3', 'd5', 'e7'] },
+    { id: 5, title: '퀸', how: '퀸은 앞뒤옆과 대각선으로 쭉 가요. 제일 힘이 세요!', piece: { t: 'q', at: 'd1' }, stars: ['d5', 'h5', 'h1'] },
+    { id: 6, title: '킹', how: '킹은 주변 한 칸씩만 갈 수 있어요.', piece: { t: 'k', at: 'e1' }, stars: ['e2', 'f3', 'g4'] },
+    {
+      id: 7, title: '체크메이트란?', mate: true,
+      how: '체크메이트: 왕이 공격받는데 도망갈 곳도, 막을 방법도 없는 상태예요. 룩으로 한 수에 끝내 보세요!',
+      setup: [['h1', 'k', 'w'], ['a1', 'r', 'w'], ['g8', 'k', 'b'], ['f7', 'p', 'b'], ['g7', 'p', 'b'], ['h7', 'p', 'b']]
+    }
+  ];
+
+  // 공격 범위(그 칸을 지키는지 보는 용도). 킹 캐슬링 제외.
+  function attacksFrom(s, i) {
+    const p = s.board[i];
+    if (!p || p.t === 'star') return [];
+    const r = rowOf(i), c = colOf(i), out = [];
+    if (p.t === 'p') {
+      const d = p.c === 'w' ? -1 : 1;
+      for (const dc of [-1, 1]) if (inside(r + d, c + dc)) out.push((r + d) * 8 + c + dc);
+    } else if (p.t === 'n') {
+      for (const [dr, dc] of KNIGHT) if (inside(r + dr, c + dc)) out.push((r + dr) * 8 + c + dc);
+    } else if (p.t === 'k') {
+      for (const [dr, dc] of KING) if (inside(r + dr, c + dc)) out.push((r + dr) * 8 + c + dc);
+    } else {
+      const dirs = p.t === 'b' ? DIAG : p.t === 'r' ? ORTH : ALL_DIRS;
+      for (const [dr, dc] of dirs) {
+        let rr = r + dr, cc = c + dc;
+        while (inside(rr, cc)) {
+          out.push(rr * 8 + cc);
+          if (s.board[rr * 8 + cc]) break;
+          rr += dr; cc += dc;
+        }
+      }
+    }
+    return out;
+  }
+  function isAttacked(s, i, byColor) {
+    for (let j = 0; j < 64; j++) {
+      const p = s.board[j];
+      if (p && p.c === byColor && p.t !== 'star' && attacksFrom(s, j).includes(i)) return true;
+    }
+    return false;
+  }
+  function findKing(s, c) {
+    return s.board.findIndex((p) => p && p.t === 'k' && p.c === c);
+  }
+  function inCheck(s, c) {
+    const k = findKing(s, c);
+    return k >= 0 && isAttacked(s, k, enemyOf(c));
+  }
+
+  // 캐슬링(왕과 룩 자리 바꾸기): 왕이 안 움직였고, 룩이 있고, 사이가 비고, 지나가는 칸이 안전할 때만
+  function castlingMoves(s, from) {
+    const p = s.board[from];
+    const out = [];
+    const home = p.c === 'w' ? 60 : 4;
+    if (from !== home || inCheck(s, p.c)) return out;
+    const rights = p.c === 'w' ? [s.castle.wK, s.castle.wQ] : [s.castle.bK, s.castle.bQ];
+    const en = enemyOf(p.c);
+    const isRook = (i) => { const q = s.board[i]; return !!q && q.t === 'r' && q.c === p.c; };
+    const empty = (...idx) => idx.every((i) => !s.board[i]);
+    const safe = (...idx) => idx.every((i) => !isAttacked(s, i, en));
+    if (rights[0] && isRook(home + 3) && empty(home + 1, home + 2) && safe(home + 1, home + 2)) {
+      out.push({ from, to: home + 2, castle: 'K' });
+    }
+    if (rights[1] && isRook(home - 4) && empty(home - 1, home - 2, home - 3) && safe(home - 1, home - 2)) {
+      out.push({ from, to: home - 2, castle: 'Q' });
+    }
+    return out;
+  }
+
+  // 규칙상 갈 수 있는 수(내 왕이 안전한지는 아직 안 봄)
+  function pseudoMoves(s, from) {
+    const p = s.board[from];
+    if (!p || p.t === 'star') return [];
+    const r = rowOf(from), c = colOf(from), moves = [];
+    const canTake = (t) => { const q = s.board[t]; return !!q && (q.t === 'star' || q.c !== p.c); };
+    const canGo = (t) => !s.board[t] || canTake(t);
+    const add = (to, extra) => moves.push(Object.assign({ from, to }, extra || {}));
+
+    if (p.t === 'p') {
+      const d = p.c === 'w' ? -1 : 1;
+      const startRow = p.c === 'w' ? 6 : 1;
+      const promoRow = p.c === 'w' ? 0 : 7;
+      // 폰 승진: 끝 줄에 가면 자동으로 퀸
+      const push = (to, extra) => add(to, Object.assign({}, extra, rowOf(to) === promoRow ? { promo: 'q' } : {}));
+      if (inside(r + d, c) && !s.board[(r + d) * 8 + c]) {
+        push((r + d) * 8 + c);
+        if (r === startRow && !s.board[(r + 2 * d) * 8 + c]) push((r + 2 * d) * 8 + c);
+      }
+      for (const dc of [-1, 1]) {
+        const rr = r + d, cc = c + dc;
+        if (!inside(rr, cc)) continue;
+        const t = rr * 8 + cc;
+        if (canTake(t)) {
+          push(t, { capture: true });
+        } else if (!s.board[t] && t === s.ep) {
+          // 앙파상: 상대 폰이 두 칸 가서 옆을 지나갔을 때 옆 칸으로 잡기
+          const side = s.board[r * 8 + cc];
+          if (side && side.t === 'p' && side.c !== p.c) push(t, { ep: true, capture: true });
+        }
+      }
+    } else if (p.t === 'n') {
+      for (const [dr, dc] of KNIGHT) {
+        if (inside(r + dr, c + dc) && canGo((r + dr) * 8 + c + dc)) add((r + dr) * 8 + c + dc);
+      }
+    } else if (p.t === 'k') {
+      for (const [dr, dc] of KING) {
+        if (inside(r + dr, c + dc) && canGo((r + dr) * 8 + c + dc)) add((r + dr) * 8 + c + dc);
+      }
+      moves.push(...castlingMoves(s, from));
+    } else {
+      const dirs = p.t === 'b' ? DIAG : p.t === 'r' ? ORTH : ALL_DIRS;
+      for (const [dr, dc] of dirs) {
+        let rr = r + dr, cc = c + dc;
+        while (inside(rr, cc)) {
+          const t = rr * 8 + cc;
+          if (s.board[t]) {
+            if (canTake(t)) add(t, { capture: true });
+            break;
+          }
+          add(t);
+          rr += dr; cc += dc;
+        }
+      }
+    }
+    return moves;
+  }
+
+  // 수를 두고 나온 새 판 (원래 판은 그대로)
+  function applyMove(s, m) {
+    const ns = cloneState(s);
+    const b = ns.board;
+    const p = b[m.from];
+    const capIdx = m.ep ? rowOf(m.from) * 8 + colOf(m.to) : m.to;
+    const captured = b[capIdx];
+    if (captured) ns.captured.push({ t: captured.t, c: captured.c });
+    if (m.ep) b[capIdx] = null;
+    b[m.to] = { t: m.promo || p.t, c: p.c };
+    b[m.from] = null;
+    if (m.castle === 'K') { b[m.from + 1] = b[m.from + 3]; b[m.from + 3] = null; }
+    if (m.castle === 'Q') { b[m.from - 1] = b[m.from - 4]; b[m.from - 4] = null; }
+
+    if (p.t === 'k') {
+      if (p.c === 'w') { ns.castle.wK = false; ns.castle.wQ = false; }
+      else { ns.castle.bK = false; ns.castle.bQ = false; }
+    }
+    const killRights = (i) => {
+      if (i === 63) ns.castle.wK = false;
+      if (i === 56) ns.castle.wQ = false;
+      if (i === 7) ns.castle.bK = false;
+      if (i === 0) ns.castle.bQ = false;
+    };
+    killRights(m.from);
+    killRights(m.to);
+
+    ns.ep = p.t === 'p' && Math.abs(m.to - m.from) === 16 ? (m.from + m.to) / 2 : -1;
+    ns.last = { from: m.from, to: m.to };
+    ns.turn = enemyOf(p.c);
+    return ns;
+  }
+
+  // 내 왕이 공격받지 않는 수만 남김
+  function legalMoves(s, from) {
+    const p = s.board[from];
+    if (!p) return [];
+    return pseudoMoves(s, from).filter((m) => {
+      const ns = applyMove(s, m);
+      const k = findKing(ns, p.c);
+      return k < 0 || !isAttacked(ns, k, enemyOf(p.c));
+    });
+  }
+  function allLegalMoves(s, color) {
+    const out = [];
+    for (let i = 0; i < 64; i++) {
+      const p = s.board[i];
+      if (p && p.c === color && p.t !== 'star') out.push(...legalMoves(s, i));
+    }
+    return out;
+  }
+
+  function status(s) {
+    const none = allLegalMoves(s, s.turn).length === 0;
+    const check = inCheck(s, s.turn);
+    if (none) return check ? 'checkmate' : 'stalemate';
+    return check ? 'check' : 'playing';
+  }
+
+  // 왜 이 수를 둘 수 없는지 짧게 알려 줌
+  function explainIllegal(s, from, to) {
+    const p = s.board[from];
+    if (!p || p.t === 'star') return '먼저 내 기물을 눌러 주세요.';
+    if (p.c !== s.turn) return '지금은 상대 차례예요. 내 차례를 기다려요.';
+    const q = s.board[to];
+    if (q && q.t !== 'star' && q.c === p.c) return '내 기물이 있는 칸에는 갈 수 없어요.';
+    const reachable = pseudoMoves(s, from).some((m) => m.to === to);
+    if (!reachable) return `${PIECE_NAMES[p.t]}은(는) 그 칸으로 갈 수 없어요. ${MOVE_HINT[p.t]}`;
+    if (inCheck(s, p.c)) return '왕이 공격받고 있어요! 먼저 왕을 지켜야 해요.';
+    return '그 수를 두면 내 왕이 공격받게 돼요. 그래서 둘 수 없어요.';
+  }
+
+  const starsLeft = (s) => s.board.filter((p) => p && p.t === 'star').length;
+
+  // ---- 컴퓨터(AI) ----
+  // 점수: 내 기물 값 - 상대 기물 값 (별은 0점)
+  function evaluate(s, me) {
+    let v = 0;
+    for (const p of s.board) if (p && p.t !== 'star') v += (p.c === me ? 1 : -1) * VALUE[p.t] * 100;
+    return v;
+  }
+  // 현재 차례 쪽에서 본 점수. depth 0이면 바로 계산
+  function search(s, depth) {
+    if (depth === 0) return evaluate(s, s.turn);
+    const moves = allLegalMoves(s, s.turn);
+    if (!moves.length) return inCheck(s, s.turn) ? -100000 - depth : 0;
+    let best = -Infinity;
+    for (const m of moves) {
+      const v = -search(applyMove(s, m), depth - 1);
+      if (v > best) best = v;
+    }
+    return best;
+  }
+  function bestMove(s, depth) {
+    const moves = allLegalMoves(s, s.turn);
+    if (!moves.length) return null;
+    let best = -Infinity, list = [];
+    for (const m of moves) {
+      const v = -search(applyMove(s, m), depth - 1);
+      if (v > best) { best = v; list = [m]; } else if (v === best) list.push(m);
+    }
+    return pick(list);
+  }
+  // level: 'baby' 무작위 / 'easy' 잡을 수 있으면 잡기 / 'normal' 두 수 앞까지 계산
+  function aiMove(s, level) {
+    const moves = allLegalMoves(s, s.turn);
+    if (!moves.length) return null;
+    if (level === 'baby') return pick(moves);
+    if (level === 'easy') {
+      const caps = moves.filter((m) => s.board[m.to] || m.ep);
+      return pick(caps.length ? caps : moves);
+    }
+    return bestMove(s, 2);
+  }
+
+  return {
+    FILES, PIECE_NAMES, MOVE_HINT, VALUE, LESSONS,
+    toIndex, toName, rowOf, colOf, enemyOf,
+    emptyState, startState, cloneState, lessonState,
+    pseudoMoves, legalMoves, allLegalMoves, applyMove,
+    attacksFrom, isAttacked, findKing, inCheck, status,
+    explainIllegal, starsLeft, evaluate, bestMove, aiMove
+  };
+})();
+/* ===RULES:END=== */
+
+/* ===UI:START=== */
+const $ = (id) => document.getElementById(id);
+const GLYPH = { k: '♚︎', q: '♛︎', r: '♜︎', b: '♝︎', n: '♞︎', p: '♟︎' };
+const DESC = {
+  p: '🐾 폰: 앞으로 한 칸 가요. 처음에는 두 칸도 갈 수 있어요. 잡을 때는 비스듬히 앞으로 잡아요.',
+  r: '🏰 룩: 앞뒤옆으로 쭉 갈 수 있어요.',
+  n: '🐴 나이트: ㄱ자 모양으로 뛰어요. 다른 기물을 뛰어넘을 수 있어요.',
+  b: '⛪ 비숍: 대각선으로 쭉 갈 수 있어요.',
+  q: '👑 퀸: 앞뒤옆과 대각선으로 쭉 갈 수 있어요. 가장 힘이 센 기물이에요.',
+  k: '🤴 킹: 주변 한 칸씩만 갈 수 있어요. 킹이 잡히면 게임이 끝나요.'
+};
+const PRAISE = ['잘했어요! 🎉', '좋은 수예요! ⭐', '멋져요! 👏', '대단해요! 🌟', '똑똑해요! 😊'];
+const CONFETTI_COLORS = ['#e8c46a', '#b71c1c', '#2e7d4f', '#f5e6c0', '#8e5bd1', '#d4a64a'];
+const STORE_KEY = 'chess-lesson-progress-v1';
+
+// ---- 소리 (Web Audio로 직접 만듦. 파일 없음) ----
+const Sound = (() => {
+  let ctx = null;
+  let muted = false;
+  function audio() {
+    if (!ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      ctx = new AC();
+    }
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+  function tone(freq, dur, type, vol, delay) {
+    if (muted) return;
+    try {
+      const a = audio();
+      if (!a) return;
+      const t = a.currentTime + (delay || 0);
+      const o = a.createOscillator();
+      const g = a.createGain();
+      o.type = type || 'sine';
+      o.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(vol || 0.15, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      o.connect(g); g.connect(a.destination);
+      o.start(t); o.stop(t + dur + 0.05);
+    } catch (e) { /* 소리가 안 나도 게임은 계속돼요 */ }
+  }
+  return {
+    move() { tone(520, 0.08, 'triangle', 0.12); },
+    capture() { tone(180, 0.18, 'sawtooth', 0.1); },
+    check() { tone(660, 0.12, 'square', 0.07); tone(880, 0.2, 'square', 0.07, 0.13); },
+    win() { [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.3, 'triangle', 0.15, i * 0.16)); },
+    toggle() { muted = !muted; return muted; },
+    isMuted() { return muted; }
+  };
+})();
+
+// ---- 색종이 효과 ----
+function confetti() {
+  const cv = $('confetti');
+  const ctx = cv.getContext('2d');
+  cv.width = innerWidth;
+  cv.height = innerHeight;
+  const parts = Array.from({ length: 150 }, () => ({
+    x: Math.random() * cv.width,
+    y: -Math.random() * cv.height * 0.4,
+    vx: (Math.random() - 0.5) * 5,
+    vy: 2 + Math.random() * 4,
+    a: Math.random() * 6.28,
+    va: (Math.random() - 0.5) * 0.3,
+    w: 8 + Math.random() * 8,
+    h: 5 + Math.random() * 6,
+    c: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)]
+  }));
+  let frame = 0;
+  (function step() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    for (const p of parts) {
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.a += p.va;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.a);
+      ctx.fillStyle = p.c;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    }
+    frame++;
+    if (frame < 240) requestAnimationFrame(step);
+    else ctx.clearRect(0, 0, cv.width, cv.height);
+  })();
+}
+
+// ---- 칭찬 메시지 ----
+function praise() {
+  const t = $('toast');
+  t.textContent = PRAISE[Math.floor(Math.random() * PRAISE.length)];
+  t.classList.add('show');
+  clearTimeout(praise.timer);
+  praise.timer = setTimeout(() => t.classList.remove('show'), 1600);
+}
+
+// ---- 진행 상황 저장 (저장이 안 되면 그냥 넘어감) ----
+function loadProgress() {
+  try {
+    const j = JSON.parse(localStorage.getItem(STORE_KEY));
+    if (j && Array.isArray(j.done)) return j;
+  } catch (e) { /* 무시 */ }
+  return { done: [] };
+}
+function saveProgress() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(progress)); } catch (e) { /* 무시 */ }
+}
+let progress = loadProgress();
+
+// ---- 공통: 판 그리기 (게임과 레슨이 같이 씀) ----
+// ov: { selected, targets(Map: 칸 -> {capture, danger}), last, check(왕 칸), hint({from,to}) }
+function renderBoard(el, state, ov) {
+  ov = ov || {};
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < 64; i++) {
+    const r = Math.floor(i / 8), c = i % 8;
+    const sq = document.createElement('div');
+    sq.className = 'sq ' + ((r + c) % 2 === 0 ? 'light' : 'dark');
+    sq.dataset.i = i;
+    if (ov.selected === i) sq.classList.add('sel');
+    const t = ov.targets && ov.targets.get(i);
+    if (t) {
+      sq.classList.add(t.capture ? 'capture' : 'dot');
+      if (t.danger) sq.classList.add('danger');
+    }
+    if (ov.last && (ov.last.from === i || ov.last.to === i)) sq.classList.add('last');
+    if (ov.check === i) sq.classList.add('check');
+    if (ov.hint && (ov.hint.from === i || ov.hint.to === i)) sq.classList.add('hint');
+    const p = state.board[i];
+    if (p) {
+      const pc = document.createElement('span');
+      if (p.t === 'star') {
+        pc.className = 'pc star';
+        pc.textContent = '⭐';
+      } else {
+        pc.className = 'pc ' + (p.c === 'w' ? 'white' : 'black');
+        pc.textContent = GLYPH[p.t];
+      }
+      sq.appendChild(pc);
+    }
+    frag.appendChild(sq);
+  }
+  el.replaceChildren(frag);
+}
+function sqRect(el, i) {
+  const s = el.querySelector(`.sq[data-i="${i}"]`);
+  return s ? s.getBoundingClientRect() : null;
+}
+// 기물이 옮겨 간 것처럼 부드럽게 미끄러지기
+function flashMove(el, fromRect, toIdx) {
+  const sq = el.querySelector(`.sq[data-i="${toIdx}"]`);
+  const pc = sq && sq.querySelector('.pc');
+  if (!pc || !fromRect) return;
+  const to = sq.getBoundingClientRect();
+  pc.style.transition = 'none';
+  pc.style.transform = `translate(${fromRect.left - to.left}px, ${fromRect.top - to.top}px)`;
+  void pc.offsetWidth;
+  pc.style.transition = 'transform .3s ease';
+  pc.style.transform = '';
+}
+// 기물을 고르면 갈 수 있는 칸 계산 (노란 경고 포함)
+function targetMap(st, from) {
+  const map = new Map();
+  for (const m of Rules.legalMoves(st, from)) {
+    const ns = Rules.applyMove(st, m);
+    map.set(m.to, {
+      move: m,
+      capture: !!st.board[m.to] || !!m.ep,
+      danger: Rules.isAttacked(ns, m.to, Rules.enemyOf(st.turn))
+    });
+  }
+  return map;
+}
+function checkSquare(st) {
+  return Rules.inCheck(st, st.turn) ? Rules.findKing(st, st.turn) : -1;
+}
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach((s) => s.classList.toggle('active', s.id === id));
+  window.scrollTo(0, 0);
+}
+function say(text) { $('panel').textContent = text; }
+
+// ================= 게임 =================
+const game = { mode: 'pvp', level: 'normal', state: null, history: [], selected: null, targets: new Map(), hint: null, busy: false, timer: null };
+
+function startGame(mode, level) {
+  clearTimeout(game.timer);
+  Object.assign(game, {
+    mode, level: level || 'normal', state: Rules.startState(), history: [],
+    selected: null, targets: new Map(), hint: null, busy: false, timer: null
+  });
+  $('thinking').hidden = true;
+  say(mode === 'ai'
+    ? '컴퓨터와 대결해요. 나는 흰색이에요. 기물을 눌러서 움직여 보세요.'
+    : '친구와 대결해요. 흰색부터 시작해요. 기물을 눌러서 움직여 보세요.');
+  show('game');
+  renderGame();
+}
+
+function renderGame(fromRect, toIdx) {
+  const st = game.state;
+  const status = Rules.status(st);
+  renderBoard($('board'), st, {
+    selected: game.selected, targets: game.targets, last: st.last, check: checkSquare(st), hint: game.hint
+  });
+  if (fromRect && toIdx !== undefined) flashMove($('board'), fromRect, toIdx);
+
+  const turnName = st.turn === 'w' ? '흰색' : '검은색';
+  const who = game.mode === 'ai' ? (st.turn === 'w' ? ' (나)' : ' (컴퓨터)') : '';
+  const banner = $('turnBanner');
+  if (status === 'checkmate') banner.textContent = `🏆 체크메이트! ${st.turn === 'w' ? '검은색' : '흰색'} 승리`;
+  else if (status === 'stalemate') banner.textContent = '🤝 스테일메이트! 비겼어요';
+  else if (status === 'check') banner.textContent = `⚠️ ${turnName} 차례${who} · 왕이 공격받고 있어요!`;
+  else banner.textContent = `${st.turn === 'w' ? '⬜' : '⬛'} ${turnName} 차례${who}`;
+  banner.classList.toggle('alert', status === 'check');
+
+  const fill = (el, color) => {
+    el.textContent = '';
+    st.captured.filter((p) => p.c === color && p.t !== 'star').forEach((p) => {
+      const s = document.createElement('span');
+      s.className = 'pc ' + (color === 'w' ? 'white' : 'black');
+      s.textContent = GLYPH[p.t];
+      el.appendChild(s);
+    });
+  };
+  fill($('capByWhite'), 'b');
+  fill($('capByBlack'), 'w');
+
+  const over = status === 'checkmate' || status === 'stalemate';
+  $('btnUndo').disabled = game.history.length === 0;
+  $('btnHint').disabled = over || game.busy || (game.mode === 'ai' && st.turn === 'b');
+  $('btnSound').textContent = Sound.isMuted() ? '🔈 소리 켜기' : '🔊 소리 끄기';
+}
+
+function onGameSquare(i) {
+  if (game.busy) return;
+  const st = game.state;
+  const status = Rules.status(st);
+  if (status === 'checkmate' || status === 'stalemate') return;
+  if (game.targets.has(i)) { makeMove(game.targets.get(i).move); return; }
+  const p = st.board[i];
+  if (p && p.c === st.turn && p.t !== 'star') {
+    if (game.selected === i) { game.selected = null; game.targets = new Map(); say(''); renderGame(); return; }
+    select(i);
+    return;
+  }
+  if (game.selected !== null) { say(Rules.explainIllegal(st, game.selected, i)); return; }
+  say(p ? '그 기물은 상대 기물이에요. 내 기물을 먼저 눌러 주세요.' : '먼저 내 기물을 눌러 주세요.');
+}
+
+function select(i) {
+  const st = game.state;
+  game.selected = i;
+  game.targets = targetMap(st, i);
+  const p = st.board[i];
+  const n = game.targets.size;
+  let text = DESC[p.t] + '\n';
+  if (n === 0) text += '지금은 움직일 수 없어요. 다른 기물을 골라 보세요.';
+  else {
+    text += `갈 수 있는 칸: ${n}개 (초록 점은 빈 칸, 빨간 테두리는 잡는 칸)`;
+    if ([...game.targets.values()].some((t) => t.danger)) text += '\n⚠️ 노란 칸은 상대가 잡을 수 있는 칸이에요.';
+  }
+  say(text);
+  renderGame();
+}
+
+function makeMove(m) {
+  const before = game.state;
+  const mover = before.turn;
+  const mp = before.board[m.from];
+  const isCap = !!before.board[m.to] || !!m.ep;
+  const fromRect = sqRect($('board'), m.from);
+  game.history.push(before);
+  const ns = Rules.applyMove(before, m);
+  game.state = ns;
+  game.selected = null;
+  game.targets = new Map();
+  game.hint = null;
+
+  const status = Rules.status(ns);
+  if (status === 'checkmate') Sound.win();
+  else if (status === 'check') Sound.check();
+  else if (isCap) Sound.capture();
+  else Sound.move();
+  renderGame(fromRect, m.to);
+
+  const who = mover === 'b' && game.mode === 'ai' ? '컴퓨터가 ' : '';
+  if (status === 'checkmate') {
+    say(`🏆 체크메이트! ${mover === 'w' ? '흰색' : '검은색'}이 이겼어요! 🎉`);
+    confetti();
+    return;
+  }
+  if (status === 'stalemate') {
+    say('🤝 스테일메이트! 둘 수 있는 수가 없어서 비겼어요.');
+    return;
+  }
+  if (isCap || status === 'check') {
+    if (game.mode === 'pvp' || mover === 'w') praise();
+  }
+  const base = `${who}${Rules.PIECE_NAMES[mp.t]} 기물을 옮겼어요.`;
+  if (status === 'check') {
+    say(`${base}\n왕이 공격받고 있어요! 왕을 지켜요`);
+  } else {
+    say(base);
+  }
+  if (game.mode === 'ai' && ns.turn === 'b') scheduleAI();
+}
+
+// 컴퓨터가 0.5초 생각하는 척하고 둠
+function scheduleAI() {
+  game.busy = true;
+  $('thinking').hidden = false;
+  renderGame();
+  game.timer = setTimeout(() => {
+    game.timer = null;
+    const m = Rules.aiMove(game.state, game.level);
+    game.busy = false;
+    $('thinking').hidden = true;
+    if (m) makeMove(m);
+    else renderGame();
+  }, 500);
+}
+
+function undo() {
+  if (!game.history.length) { say('되돌릴 수 있는 수가 없어요.'); return; }
+  clearTimeout(game.timer);
+  game.timer = null;
+  game.busy = false;
+  $('thinking').hidden = true;
+  game.state = game.history.pop();
+  // 컴퓨터와 할 때는 컴퓨터가 둔 수까지 함께 되돌림
+  if (game.mode === 'ai' && game.state.turn === 'b' && game.history.length) game.state = game.history.pop();
+  game.selected = null;
+  game.targets = new Map();
+  game.hint = null;
+  say('한 수를 되돌렸어요. 다시 두어 봐요.');
+  renderGame();
+}
+
+function showHint() {
+  const st = game.state;
+  const status = Rules.status(st);
+  if (game.busy || status === 'checkmate' || status === 'stalemate') return;
+  const m = Rules.bestMove(st, 2);
+  if (!m) return;
+  game.selected = null;
+  game.targets = new Map();
+  game.hint = { from: m.from, to: m.to };
+  say(`💡 힌트: 반짝이는 ${Rules.PIECE_NAMES[st.board[m.from].t]} 기물을 옮겨 보세요.`);
+  renderGame();
+}
+
+function goHome() {
+  clearTimeout(game.timer);
+  game.timer = null;
+  game.busy = false;
+  show('home');
+}
+
+// ================= 배우기(레슨) =================
+const lesson = { data: null, state: null, selected: null, targets: new Map(), finished: false };
+
+function renderLessonList() {
+  const grid = $('lessonGrid');
+  grid.textContent = '';
+  Rules.LESSONS.forEach((L) => {
+    const done = progress.done.includes(L.id);
+    const open = L.id === 1 || progress.done.includes(L.id - 1);
+    const btn = document.createElement('button');
+    btn.className = 'lessonCard';
+    btn.disabled = !open;
+    const mark = done ? '✅' : open ? '📘' : '🔒';
+    btn.innerHTML = `<span>${mark}</span><b>레슨 ${L.id}</b><span>${L.title}</span><small>${open ? (done ? '클리어!' : '눌러서 시작') : '앞 레슨을 먼저 끝내요'}</small>`;
+    btn.addEventListener('click', () => startLesson(L.id));
+    grid.appendChild(btn);
+  });
+}
+
+function startLesson(id) {
+  const L = Rules.LESSONS.find((x) => x.id === id);
+  Object.assign(lesson, { data: L, state: Rules.lessonState(L), selected: null, targets: new Map(), finished: false });
+  $('lessonTitle').textContent = `레슨 ${L.id}: ${L.title}`;
+  $('lessonHow').textContent = `📝 ${L.how}`;
+  $('lessonDone').hidden = true;
+  show('lesson');
+  renderLesson();
+  $('lessonPanel').textContent = L.mate
+    ? '한 수로 검은 왕을 체크메이트 하세요!'
+    : '기물을 눌러서 움직이고, ⭐ 별을 모두 먹어 보세요!';
+}
+
+function renderLesson(fromRect, toIdx) {
+  const st = lesson.state;
+  renderBoard($('lessonBoard'), st, {
+    selected: lesson.selected, targets: lesson.targets, last: st.last, check: checkSquare(st)
+  });
+  if (fromRect && toIdx !== undefined) flashMove($('lessonBoard'), fromRect, toIdx);
+  $('lessonStars').textContent = lesson.data.mate
+    ? '🎯 목표: 한 수로 체크메이트!'
+    : `⭐ 남은 별: ${Rules.starsLeft(st)}개`;
+}
+
+function onLessonSquare(i) {
+  if (lesson.finished) return;
+  const st = lesson.state;
+  if (lesson.targets.has(i)) { lessonMove(lesson.targets.get(i).move); return; }
+  const p = st.board[i];
+  if (p && p.c === 'w' && p.t !== 'star') {
+    lesson.selected = i;
+    lesson.targets = targetMap(st, i);
+    $('lessonPanel').textContent = DESC[p.t] + (lesson.targets.size
+      ? `\n갈 수 있는 칸: ${lesson.targets.size}개`
+      : '\n지금은 움직일 수 없어요.');
+    renderLesson();
+    return;
+  }
+  if (lesson.selected !== null) {
+    $('lessonPanel').textContent = Rules.explainIllegal(st, lesson.selected, i);
+    return;
+  }
+  $('lessonPanel').textContent = '먼저 흰색 기물을 눌러 주세요.';
+}
+
+function lessonMove(m) {
+  const prev = lesson.state;
+  const fromRect = sqRect($('lessonBoard'), m.from);
+  const ns = Rules.applyMove(prev, m);
+  const isStar = !!prev.board[m.to];
+  lesson.selected = null;
+  lesson.targets = new Map();
+
+  if (lesson.data.mate) {
+    if (Rules.status(ns) !== 'checkmate') {
+      $('lessonPanel').textContent = '아쉬워요! 이 수로는 체크메이트가 안 돼요. 다른 수를 찾아봐요.';
+      renderLesson();
+      return;
+    }
+    lesson.state = ns;
+    renderLesson(fromRect, m.to);
+    finishLesson('🏆 체크메이트 성공! 모든 레슨을 끝냈어요!');
+    return;
+  }
+
+  lesson.state = ns;
+  if (isStar) Sound.capture(); else Sound.move();
+  renderLesson(fromRect, m.to);
+  const left = Rules.starsLeft(ns);
+  if (left === 0) {
+    finishLesson('🎉 잘했어요! 별을 모두 먹었어요!');
+    return;
+  }
+  if (isStar) praise();
+  $('lessonPanel').textContent = Rules.allLegalMoves(ns, 'w').length === 0
+    ? '더 갈 수 있는 칸이 없어요. "다시 하기"를 눌러 보세요.'
+    : `별을 먹었어요! 남은 별: ${left}개`;
+}
+
+function finishLesson(msg) {
+  lesson.finished = true;
+  const id = lesson.data.id;
+  if (!progress.done.includes(id)) progress.done.push(id);
+  saveProgress();
+  const next = Rules.LESSONS.find((x) => x.id === id + 1);
+  $('lessonDoneText').textContent = msg + (next ? `\n레슨 ${next.id} (${next.title})이 열렸어요!` : '');
+  $('btnNextLesson').hidden = !next;
+  $('lessonDone').hidden = false;
+  Sound.win();
+  confetti();
+}
+
+// ================= 연결(버튼과 칸 클릭) =================
+$('btnLearn').addEventListener('click', () => { renderLessonList(); show('learn'); });
+$('btnLearnHome').addEventListener('click', () => show('home'));
+$('btnPlay').addEventListener('click', () => show('mode'));
+$('btnPvp').addEventListener('click', () => startGame('pvp'));
+$('btnAi').addEventListener('click', () => show('level'));
+document.querySelectorAll('[data-go]').forEach((b) => b.addEventListener('click', () => show(b.dataset.go)));
+document.querySelectorAll('[data-level]').forEach((b) => b.addEventListener('click', () => startGame('ai', b.dataset.level)));
+
+$('btnHome').addEventListener('click', goHome);
+$('btnUndo').addEventListener('click', undo);
+$('btnHint').addEventListener('click', showHint);
+$('btnSound').addEventListener('click', () => { Sound.toggle(); renderGame(); });
+$('board').addEventListener('click', (e) => {
+  const sq = e.target.closest('.sq');
+  if (sq) onGameSquare(Number(sq.dataset.i));
+});
+
+$('lessonBoard').addEventListener('click', (e) => {
+  const sq = e.target.closest('.sq');
+  if (sq) onLessonSquare(Number(sq.dataset.i));
+});
+$('btnRetry').addEventListener('click', () => startLesson(lesson.data.id));
+$('btnDoneRetry').addEventListener('click', () => startLesson(lesson.data.id));
+$('btnListBack').addEventListener('click', () => { renderLessonList(); show('learn'); });
+$('btnDoneList').addEventListener('click', () => { renderLessonList(); show('learn'); });
+$('btnNextLesson').addEventListener('click', () => startLesson(lesson.data.id + 1));
+/* ===UI:END=== */
+</script>
+</body>
+</html>
