@@ -312,7 +312,7 @@
 <section id="level" class="screen">
   <h2 data-i18n="levelQ">컴퓨터 난이도를 골라요</h2>
   <div class="menu">
-    <button class="big" data-level="easy" data-i18n="easy">🐥 초급 (잡을 수 있으면 잡아요)</button>
+    <button class="big" data-level="easy" data-i18n="easy">🐥 초급 (아무 데나 두고, 가끔 잡아요)</button>
     <button class="big" data-level="normal" data-i18n="normal">🦅 중급 (두 수 앞까지 생각해요)</button>
     <button class="big" data-level="hard" data-i18n="hard">🐉 고급 (세 수 앞까지 생각해요)</button>
     <button class="ghost" data-go="mode" data-i18n="back">← 뒤로</button>
@@ -436,7 +436,8 @@ const Rules = (() => {
   const colOf = (i) => i % 8;
   const inside = (r, c) => r >= 0 && r < 8 && c >= 0 && c < 8;
   const enemyOf = (c) => (c === 'w' ? 'b' : 'w');
-  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const pick = (arr, rand = Math.random) => arr[Math.floor(rand() * arr.length)];
+  const EASY_CAPTURE_CHANCE = 0.3; // 초급: 잡을 수 있어도 10번 중 3번만 일부러 잡아요
 
   function emptyState() {
     return { board: Array(64).fill(null), turn: 'w', castle: { wK: false, wQ: false, bK: false, bQ: false }, ep: -1, last: null, captured: [] };
@@ -768,14 +769,15 @@ const Rules = (() => {
     }
     return pick(list);
   }
-  // level: 'baby' 무작위 / 'easy'(초급) 잡을 수 있으면 잡기 / 'normal'(중급) 두 수 앞까지 계산 / 'hard'(고급) 세 수 앞까지 계산
-  function aiMove(s, level) {
+  // level: 'baby' 무작위 / 'easy'(초급) 거의 아무 데나, 가끔 잡기 / 'normal'(중급) 두 수 앞까지 계산 / 'hard'(고급) 세 수 앞까지 계산
+  // rand: 테스트에서 운을 정해 줄 수 있게 바꿔 끼울 수 있어요
+  function aiMove(s, level, rand = Math.random) {
     const moves = allLegalMoves(s, s.turn);
     if (!moves.length) return null;
-    if (level === 'baby') return pick(moves);
+    if (level === 'baby') return pick(moves, rand);
     if (level === 'easy') {
       const caps = moves.filter((m) => s.board[m.to] || m.ep);
-      return pick(caps.length ? caps : moves);
+      return pick(caps.length && rand() < EASY_CAPTURE_CHANCE ? caps : moves, rand);
     }
     return bestMove(s, level === 'hard' ? 3 : 2);
   }
@@ -805,7 +807,7 @@ const I18N = {
     modeQ: '어떻게 할까요?', pvp: '👫 친구와 하기', ai: '🤖 컴퓨터와 하기',
     backHome: '← 처음으로', back: '← 뒤로',
     levelQ: '컴퓨터 난이도를 골라요',
-    easy: '🐥 초급 (잡을 수 있으면 잡아요)',
+    easy: '🐥 초급 (아무 데나 두고, 가끔 잡아요)',
     normal: '🦅 중급 (두 수 앞까지 생각해요)',
     hard: '🐉 고급 (세 수 앞까지 생각해요)',
     tapPiece: '기물을 눌러서 움직여 보세요.',
@@ -870,7 +872,7 @@ const I18N = {
     modeQ: 'How do you want to play?', pvp: '👫 Play with a friend', ai: '🤖 Play with the computer',
     backHome: '← Home', back: '← Back',
     levelQ: 'Choose the computer level',
-    easy: '🐥 Beginner (captures when it can)',
+    easy: '🐥 Beginner (moves at random, sometimes captures)',
     normal: '🦅 Intermediate (thinks 2 moves ahead)',
     hard: '🐉 Advanced (thinks 3 moves ahead)',
     tapPiece: 'Tap a piece to move it.',

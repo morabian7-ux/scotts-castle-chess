@@ -164,9 +164,20 @@ test('잡힌 기물은 captured 목록에 들어감', () => {
 });
 
 // ---------- 컴퓨터 ----------
-test('컴퓨터 쉬움: 잡을 수 있으면 잡음 (룩이 흰 퀸을 잡음)', () => {
-  const s = setup([['h8', 'k', 'b'], ['a8', 'r', 'b'], ['a1', 'q', 'w'], ['h1', 'k', 'w']], 'b');
-  assert.strictEqual(R.aiMove(s, 'easy').to, R.toIndex('a1'));
+test('컴퓨터 초급: 운이 좋을 때(10번 중 3번)만 일부러 잡음', () => {
+  // 흰 퀸 a2는 검은 룩이 잡을 수 있지만, 검은 왕은 체크가 아니라서 둘 수 있는 수가 14개
+  const s = setup([['h8', 'k', 'b'], ['a8', 'r', 'b'], ['a2', 'q', 'w'], ['h1', 'k', 'w']], 'b');
+  assert.strictEqual(R.inCheck(s, 'b'), false);
+  assert.strictEqual(R.allLegalMoves(s, 'b').length, 14);
+  // 운을 0으로 정하면 잡는 쪽을 고름
+  assert.strictEqual(R.aiMove(s, 'easy', () => 0).to, R.toIndex('a2'));
+  // 운을 0.5로 정하면 잡기를 건너뛰고 아무 수나 고름 (잡는 수가 아님)
+  assert.notStrictEqual(R.aiMove(s, 'easy', () => 0.5).to, R.toIndex('a2'));
+  // 실제로 400번 두어 보면 퀸을 잡는 건 대략 1/3 정도 (전에는 매번 잡았음)
+  let caps = 0;
+  for (let i = 0; i < 400; i++) if (R.aiMove(s, 'easy').to === R.toIndex('a2')) caps++;
+  const rate = caps / 400;
+  assert.ok(rate > 0.2 && rate < 0.5, `잡는 비율이 ${rate.toFixed(2)}예요`);
 });
 
 test('컴퓨터 보통: 두 수 앞을 보고 공짜 퀸을 잡음', () => {
