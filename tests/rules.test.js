@@ -164,34 +164,37 @@ test('잡힌 기물은 captured 목록에 들어감', () => {
 });
 
 // ---------- 컴퓨터 ----------
-test('컴퓨터 초급: 운이 좋을 때(10번 중 3번)만 일부러 잡음', () => {
+test('컴퓨터 초급: 완전히 아무 데나 둠 (일부러 잡지 않음)', () => {
   // 흰 퀸 a2는 검은 룩이 잡을 수 있지만, 검은 왕은 체크가 아니라서 둘 수 있는 수가 14개
   const s = setup([['h8', 'k', 'b'], ['a8', 'r', 'b'], ['a2', 'q', 'w'], ['h1', 'k', 'w']], 'b');
   assert.strictEqual(R.inCheck(s, 'b'), false);
-  assert.strictEqual(R.allLegalMoves(s, 'b').length, 14);
-  // 운을 0으로 정하면 잡는 쪽을 고름
-  assert.strictEqual(R.aiMove(s, 'easy', () => 0).to, R.toIndex('a2'));
-  // 운을 0.5로 정하면 잡기를 건너뛰고 아무 수나 고름 (잡는 수가 아님)
-  assert.notStrictEqual(R.aiMove(s, 'easy', () => 0.5).to, R.toIndex('a2'));
-  // 실제로 400번 두어 보면 퀸을 잡는 건 대략 1/3 정도 (전에는 매번 잡았음)
+  const moves = R.allLegalMoves(s, 'b');
+  assert.strictEqual(moves.length, 14);
+  // 운을 정해 주면 그 순서의 수를 그대로 고름 → 잡는 수를 따로 고르지 않음
+  for (let k = 0; k < 14; k++) {
+    const m = R.aiMove(s, 'easy', () => (k + 0.5) / 14);
+    assert.strictEqual(m.to, moves[k].to);
+  }
+  // 실제로 1400번 두어 보면 퀸을 잡는 건 14번 중 1번 정도 (약 0.07)
   let caps = 0;
-  for (let i = 0; i < 400; i++) if (R.aiMove(s, 'easy').to === R.toIndex('a2')) caps++;
-  const rate = caps / 400;
-  assert.ok(rate > 0.2 && rate < 0.5, `잡는 비율이 ${rate.toFixed(2)}예요`);
+  for (let i = 0; i < 1400; i++) if (R.aiMove(s, 'easy').to === R.toIndex('a2')) caps++;
+  const rate = caps / 1400;
+  assert.ok(rate > 0.03 && rate < 0.13, `잡는 비율이 ${rate.toFixed(3)}예요`);
 });
 
-test('컴퓨터 보통: 두 수 앞을 보고 공짜 퀸을 잡음', () => {
+test('컴퓨터 중급(한 수 앞): 공짜 퀸은 잡음', () => {
   const s = setup([['h8', 'k', 'b'], ['a8', 'r', 'b'], ['a1', 'q', 'w'], ['h1', 'k', 'w']], 'b');
   assert.strictEqual(R.aiMove(s, 'normal').to, R.toIndex('a1'));
 });
 
-test('컴퓨터 보통: 한 수로 체크메이트 되는 수를 찾음 (Ra8#)', () => {
-  const s = setup([['h1', 'k', 'w'], ['a1', 'r', 'w'], ['g8', 'k', 'b'], ['f7', 'p', 'b'], ['g7', 'p', 'b'], ['h7', 'p', 'b']]);
-  const m = R.aiMove(s, 'normal');
-  assert.strictEqual(R.status(R.applyMove(s, m)), 'checkmate');
+test('컴퓨터 중급은 한 수만 보고 지켜진 폰을 덥석 잡고, 고급은 두 수를 보고 참음', () => {
+  // 흰 폰 d5는 흰 폰 e4가 지키고 있어요. 검은 퀸이 d5를 잡으면 다시 잡혀요.
+  const s = setup([['h8', 'k', 'b'], ['d8', 'q', 'b'], ['d5', 'p', 'w'], ['e4', 'p', 'w'], ['h1', 'k', 'w']], 'b');
+  assert.strictEqual(R.aiMove(s, 'normal').to, R.toIndex('d5'));
+  for (let i = 0; i < 5; i++) assert.notStrictEqual(R.aiMove(s, 'hard').to, R.toIndex('d5'));
 });
 
-test('컴퓨터 고급(세 수 앞): 공짜 퀸을 잡고, 한 수 체크메이트도 찾음', () => {
+test('컴퓨터 고급(두 수 앞): 공짜 퀸을 잡고, 한 수 체크메이트도 찾음', () => {
   const s = setup([['h8', 'k', 'b'], ['a8', 'r', 'b'], ['a1', 'q', 'w'], ['h1', 'k', 'w']], 'b');
   assert.strictEqual(R.aiMove(s, 'hard').to, R.toIndex('a1'));
   const mate = setup([['h1', 'k', 'w'], ['a1', 'r', 'w'], ['g8', 'k', 'b'], ['f7', 'p', 'b'], ['g7', 'p', 'b'], ['h7', 'p', 'b']]);
